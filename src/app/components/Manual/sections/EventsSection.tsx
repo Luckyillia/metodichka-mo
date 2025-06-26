@@ -11,7 +11,7 @@ const EventsSection = () => {
             <div className="subsection">
                 <h3>📋 Список основных мероприятий для Министерства Обороны</h3>
                 <div className="schedule-grid">
-                    <div className="schedule-item"><a href="https://github.com/Luckyillia/metodichka-mo">🔧 Сборка/разборка автомата</a> </div>
+                    <div className="schedule-item"><a href="https://github.com/Luckyillia/metodichka-mo" className="document-link" target="_blank" rel="noopener noreferrer">🔧 Сборка/разборка автомата</a> </div>
                     <div className="schedule-item">🔫 Сборка/разборка пистолета</div>
                     <div className="schedule-item">💣 Разминирование мины</div>
                     <div className="schedule-item">📻 Починка рации</div>
