@@ -1,103 +1,68 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+import { useState, Suspense, lazy } from 'react';
+import Header from '@/app/components/Manual/Header';
+import Sidebar from '@/app/components/Manual/Sidebar';
+import { navItems, sections } from '@/data/manualData';
+import OverviewSection from '@/app/components/Manual/sections/OverviewSection';
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+// Динамический импорт остальных секций
+const LecturesSection = lazy(() => import('@/app/components/Manual/sections/LecturesSection'));
+const TrainingSection = lazy(() => import('@/app/components/Manual/sections/TrainingSection'));
+const EventsSection = lazy(() => import('@/app/components/Manual/sections/EventsSection'));
+const ExamRulesSection = lazy(() => import('@/app/components/Manual/sections/ExamRulesSection'));
+const ExamConductSection = lazy(() => import('@/app/components/Manual/sections/ExamConductSection'));
+const InterviewConscriptSection = lazy(() => import('@/app/components/Manual/sections/InterviewConscriptSection'));
+const InterviewContractSection = lazy(() => import('@/app/components/Manual/sections/InterviewContractSection'));
+const InactiveScheduleSection = lazy(() => import('@/app/components/Manual/sections/InactiveScheduleSection'));
+const WorkProceduresSection = lazy(() => import('@/app/components/Manual/sections/WorkProceduresSection'));
+const AnnouncementsSection = lazy(() => import('@/app/components/Manual/sections/AnnouncementsSection'));
+const ForumRulesSection = lazy(() => import('@/app/components/Manual/sections/ForumRulesSection'));
+const ForumResponsesSection = lazy(() => import('@/app/components/Manual/sections/ForumResponsesSection'));
+
+const sectionComponents: Record<string, React.ComponentType> = {
+    overview: OverviewSection,
+    lectures: LecturesSection,
+    training: TrainingSection,
+    events: EventsSection,
+    'exam-rules': ExamRulesSection,
+    'exam-conduct': ExamConductSection,
+    'interview-conscript': InterviewConscriptSection,
+    'interview-contract': InterviewContractSection,
+    'inactive-schedule': InactiveScheduleSection,
+    'work-procedures': WorkProceduresSection,
+    announcements: AnnouncementsSection,
+    'forum-rules': ForumRulesSection,
+    'forum-responses': ForumResponsesSection,
+};
+
+export default function ManualPage() {
+    const [activeSection, setActiveSection] = useState('overview');
+    const SectionComponent = sectionComponents[activeSection];
+    const currentSection = sections.find(section => section.id === activeSection);
+
+    return (
+        <div className="min-h-screen">
+            <Header />
+
+            <div className="container">
+                <Sidebar
+                    navItems={navItems}
+                    activeSection={activeSection}
+                    setActiveSection={setActiveSection}
+                />
+
+                <main className="main-content">
+                    {currentSection && SectionComponent && (
+                        <>
+                            <h1 className="section-title">{currentSection.title}</h1>
+                            <Suspense fallback={<div className="text-center py-10">Загрузка раздела...</div>}>
+                                <SectionComponent />
+                            </Suspense>
+                        </>
+                    )}
+                </main>
+            </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+    );
 }
