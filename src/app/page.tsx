@@ -3,7 +3,7 @@
 import { useState, Suspense, lazy } from 'react';
 import Header from '@/app/components/Manual/Header';
 import Sidebar from '@/app/components/Manual/Sidebar';
-import { navItems, sections } from '@/data/manualData';
+import { navItems } from '@/data/manualData'; // Импортируем только navItems
 import OverviewSection from '@/app/components/Manual/sections/OverviewSection';
 
 // Динамический импорт остальных секций
@@ -36,10 +36,15 @@ const sectionComponents: Record<string, React.ComponentType> = {
     'forum-responses': ForumResponsesSection,
 };
 
+// Функция для получения заголовка по ID
+const getSectionTitle = (id: string) => {
+    const item = navItems.find(item => item.id === id);
+    return item ? item.title : 'Раздел';
+};
+
 export default function ManualPage() {
     const [activeSection, setActiveSection] = useState('overview');
     const SectionComponent = sectionComponents[activeSection];
-    const currentSection = sections.find(section => section.id === activeSection);
 
     return (
         <div className="min-h-screen">
@@ -53,9 +58,9 @@ export default function ManualPage() {
                 />
 
                 <main className="main-content">
-                    {currentSection && SectionComponent && (
+                    {SectionComponent && (
                         <>
-                            <h1 className="section-title">{currentSection.title}</h1>
+                            <h1 className="section-title">{getSectionTitle(activeSection)}</h1>
                             <Suspense fallback={<div className="text-center py-10">Загрузка раздела...</div>}>
                                 <SectionComponent />
                             </Suspense>

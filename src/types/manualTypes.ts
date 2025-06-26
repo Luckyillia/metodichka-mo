@@ -4,7 +4,5 @@ export type NavItem = {
   icon: string;
 };
 
-export type Section = {
-  id: string;
-  title: string;
-};
+// Удаляем тип Section, так как он больше не нужен
+// Вместо этого используем только NavItem

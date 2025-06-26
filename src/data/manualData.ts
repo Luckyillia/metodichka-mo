@@ -1,4 +1,4 @@
-import { NavItem, Section } from '@/types/manualTypes';
+import { NavItem } from '@/types/manualTypes';
 
 export const navItems: NavItem[] = [
     { id: 'overview', title: 'Содержание', icon: '📋' },
@@ -16,7 +16,4 @@ export const navItems: NavItem[] = [
     { id: 'forum-responses', title: 'Ответы на форуме', icon: '💬' },
 ];
 
-export const sections: Section[] = navItems.map(item => ({
-    id: item.id,
-    title: item.title,
-}));
+// Удаляем экспорт sections, так как он больше не нужен
