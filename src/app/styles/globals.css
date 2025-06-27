@@ -14,15 +14,15 @@ body {
     height: 100vh;
     background-image: url('https://avatars.mds.yandex.net/i?id=554a92d9573f4b570333c6aba9022219_l-5235483-images-thumbs&n=13');
     background-repeat: no-repeat;
-    background-size: cover;
-    background-position: center;
-    position: fixed;
+    background-size: cover, auto;
+    background-attachment: fixed, scroll;
+    background-position: center, top;
     color: #FFF;
     line-height: 1.6;
 }
 
 .header {
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.3);
     color: white;
     padding: 1rem 0;
     box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
@@ -141,7 +141,7 @@ body {
 }
 
 .section-title {
-    color: #2c3e50;
+    color: #7ABDFF;
     border-bottom: 3px solid #3498db;
     padding-bottom: 10px;
     margin-bottom: 20px;
@@ -157,7 +157,7 @@ body {
 }
 
 .subsection h3 {
-    color: #2980b9;
+    color: #7ABDFF;
     margin-bottom: 15px;
     font-size: 1.3rem;
 }
@@ -207,7 +207,7 @@ body {
 }
 
 .document-link {
-    color: #3498db;
+    color: #0080FF;
     text-decoration: none;
     font-weight: bold;
 }
@@ -223,16 +223,15 @@ body {
 }
 
 .note {
-    background: #fff3cd;
-    border: 1px solid #ffeaa7;
+    background: rgba(255, 243, 205, 0.3);
     border-radius: 8px;
     padding: 15px;
     margin: 15px 0;
+    color: black;
 }
 
 .warning {
-    background: #f8d7da;
-    border: 1px solid #f5c6cb;
+    background: rgba(248, 215, 218, 0.3);
     border-radius: 8px;
     padding: 15px;
     margin: 15px 0;
@@ -261,6 +260,11 @@ body {
     color: #666;
     font-size: 0.9rem;
 }
+
+ul{
+    list-style: inside;
+}
+
 .copy-btn {
     background: rgba(255, 255, 255, 0.2) !important;
 }
