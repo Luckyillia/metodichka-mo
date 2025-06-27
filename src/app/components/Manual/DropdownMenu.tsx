@@ -7,7 +7,7 @@ interface DropdownMenuProps {
     icon?: string;
 }
 
-const DropdownMenu: React.FC<DropdownMenuProps> = ({ title, items, icon = '📚' }) => {
+const DropdownMenu: React.FC<DropdownMenuProps> = ({ title, items, icon = '📚', text= ""}) => {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
@@ -28,6 +28,9 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({ title, items, icon = '📚'
 
             <div className={`dropdown-content ${isOpen ? 'open' : 'closed'}`}>
                 <div className="dropdown-content-container">
+                    <div className="note">
+                        <strong>Примечание:</strong> {text}
+                    </div>
                     <ul className="dropdown-list">
                         {items.map((item, index) => (
                             <li key={index} className="dropdown-item">
