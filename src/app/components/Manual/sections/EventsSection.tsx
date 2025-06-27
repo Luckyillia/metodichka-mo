@@ -2,13 +2,13 @@ import React from 'react';
 import DropdownMenu from '../DropdownMenu';
 
 const EventsSection = () => {
-    const lectures = [
+    const events = [
         "Тренировка 1: Отжимание",
         "Тренировка 2: Приседания",
         "Тренировка 3: Челночный бег",
     ];
 
-    const lectureContent = {
+    const eventContent = {
         "Тренировка 1: Отжимание": [
             "say Сейчас пройдет тренировка \"Отжимания\"!",
             "say Упор лежа принять!",
