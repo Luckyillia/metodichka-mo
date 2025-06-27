@@ -8,7 +8,7 @@ export default function Header() {
       <div className="header-content">
         <div className="logo">
           <span>🎖️</span>
-          Методичка для Старшего Состава
+          Методичка для Старшего Состава МО
         </div>
       </div>
     </header>
