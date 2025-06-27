@@ -114,6 +114,14 @@ git config --global user.email "ваш.email@example.com"
 ```
 
 ### Рабочий процесс
+### !!Выжное перед изменением фалов выполнить команду в папке проекта!!
+```bash
+git branch --set-upstream-to=origin/master
+```
+### После чего выполнить данную команду
+```bash
+git pull
+```
 1. Создайте ветку (если не знаете что это такое и как им пользоватся то переходитек к пункту 2):
 ```bash
 git checkout -b feature/new-feature
