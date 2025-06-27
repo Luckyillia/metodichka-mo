@@ -261,7 +261,7 @@ body {
     font-size: 0.9rem;
 }
 
-ul{
+ul, ol{
     list-style: inside;
 }
 
