@@ -16,7 +16,8 @@ body {
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
-    color: #333;
+    position: fixed;
+    color: #FFF;
     line-height: 1.6;
 }
 
