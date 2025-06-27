@@ -13,10 +13,23 @@ body {
     width: 100%;
     height: 100vh;
     background-image: url('https://avatars.mds.yandex.net/i?id=554a92d9573f4b570333c6aba9022219_l-5235483-images-thumbs&n=13');
+<<<<<<< HEAD
     background-repeat: no-repeat;
     background-size: cover, auto;
     background-attachment: fixed, scroll;
     background-position: center, top;
+=======
+    background-attachment:
+            fixed,
+            scroll;
+    background-position:
+            center,
+            top;
+    background-size:
+            cover,
+            auto;
+    position: fixed;
+>>>>>>> 6c62b03 (Список треннировок обновлен и добавлен с стандартный вариант)
     color: #FFF;
     line-height: 1.6;
 }
