@@ -17,7 +17,6 @@ body {
     background-size: cover, auto;
     background-attachment: fixed, scroll;
     background-position: center, top;
-    position: fixed;
     color: #FFF;
     line-height: 1.6;
 }
