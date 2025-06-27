@@ -3,11 +3,13 @@ import ExamplePhrase from './ExamplePhrase';
 
 interface DropdownMenuProps {
     title: string;
-    items: string[];
+    items: string[] | DropdownMenuProps[]; // Измененный тип для поддержки вложенности
     icon?: string;
+    text?: string;
+    type?: "0" | "1"; // Конкретизировали тип
 }
 
-const DropdownMenu: React.FC<DropdownMenuProps> = ({ title, items, icon = '📚', text= ""}) => {
+const DropdownMenu: React.FC<DropdownMenuProps> = ({ title, items, icon = '📚', text= "", type = "0"}) => {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
@@ -28,21 +30,42 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({ title, items, icon = '📚'
 
             <div className={`dropdown-content ${isOpen ? 'open' : 'closed'}`}>
                 <div className="dropdown-content-container">
-                    <div className="note">
-                        <strong>Примечание:</strong> {text}
-                    </div>
-                    <ul className="dropdown-list">
-                        {items.map((item, index) => (
-                            <li key={index} className="dropdown-item">
-                                <div className="dropdown-item-container">
-                                    <ExamplePhrase text={item} />
-                                </div>
+                    {/* Условие для отображения примечания */}
+                    {text && (
+                        <div className="note">
+                            <strong>Примечание:</strong> {text}
+                        </div>
+                    )}
 
-                                {index < items.length - 1 && (
-                                    <div className="dropdown-separator"></div>
-                                )}
-                            </li>
-                        ))}
+                    <ul className="dropdown-list">
+                        {items.map((item, index) => {
+                            // Рендер для типа "1" (вложенные DropdownMenu)
+                            if (type === "1") {
+                                const nestedProps = item as DropdownMenuProps;
+                                return (
+                                    <li key={index} className="dropdown-item">
+                                        <div className="dropdown-item-container">
+                                            <DropdownMenu {...nestedProps} />
+                                        </div>
+                                        {index < items.length - 1 && (
+                                            <div className="dropdown-separator"></div>
+                                        )}
+                                    </li>
+                                );
+                            }
+
+                            // Рендер для типа "0" (обычные фразы)
+                            return (
+                                <li key={index} className="dropdown-item">
+                                    <div className="dropdown-item-container">
+                                        <ExamplePhrase text={item as string} />
+                                    </div>
+                                    {index < items.length - 1 && (
+                                        <div className="dropdown-separator"></div>
+                                    )}
+                                </li>
+                            );
+                        })}
                     </ul>
                 </div>
             </div>

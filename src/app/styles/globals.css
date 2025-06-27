@@ -206,6 +206,10 @@ body {
     text-align: center;
 }
 
+.schedule-item.full-width {
+    grid-column: 1 / -1;
+}
+
 .document-link {
     color: #0080FF;
     text-decoration: none;

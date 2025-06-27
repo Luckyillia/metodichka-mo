@@ -3,7 +3,7 @@ import React from 'react';
 const ForumRulesSection = () => {
     return (
         <>
-            <div className="subsection">
+            {/*<div className="subsection">
                 <h3>✅ Критерии проверки рапортов</h3>
                 <ul className="list-disc pl-5 space-y-2">
                     <li>Рапорт должен быть оформлен также как и в форме</li>
@@ -13,6 +13,9 @@ const ForumRulesSection = () => {
                     <li>Должность должна быть расшифрована полностью</li>
                     <li>Проверяем интервалы в подразделениях</li>
                 </ul>
+            </div>*/}
+            <div className="subsection">
+                <h3>Данный раздел находится в разработке</h3>
             </div>
         </>
     );

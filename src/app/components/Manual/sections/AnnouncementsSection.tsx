@@ -4,7 +4,7 @@ import ExamplePhrase from '../ExamplePhrase';
 const AnnouncementsSection = () => {
     return (
         <>
-            <div className="subsection">
+            {/*<div className="subsection">
                 <h3>⬆️ При повышении звания</h3>
                 <ExamplePhrase text={`[Начальник Генерального Штаба || Данил Гутков]
 
@@ -14,8 +14,10 @@ const AnnouncementsSection = () => {
 
 Текущее положение:
 УП - 0/5; П - 0/5; В - 0/3`} />
+            </div>*/}
+            <div className="subsection">
+                <h3>Данный раздел находится в разработке</h3>
             </div>
-
             {/* Остальные шаблоны объявлений аналогично */}
         </>
     );

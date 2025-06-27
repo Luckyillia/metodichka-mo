@@ -3,7 +3,7 @@ import React from 'react';
 const WorkProceduresSection = () => {
     return (
         <>
-            <div className="subsection">
+            {/*<div className="subsection">
                 <h3>⬆️ При повышении</h3>
                 <ol className="list-decimal pl-5 space-y-2">
                     <li>Отписываем в "Доску Объявлений" о повышении</li>
@@ -39,6 +39,9 @@ const WorkProceduresSection = () => {
                     <li>Отписываем в действие "Действие СС" об отнятии доступа ЖА и группы</li>
                     <li>Добавляем человека в раздел таблицы "Архив уволенных"</li>
                 </ol>
+            </div>*/}
+            <div className="subsection">
+                <h3>Данный раздел находится в разработке</h3>
             </div>
         </>
     );
