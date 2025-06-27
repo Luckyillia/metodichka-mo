@@ -5,7 +5,7 @@ import './styles/globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Методичка для Старшего Состава',
+  title: 'Методичка для Старшего Состава МО',
   description: 'Официальное руководство для старшего состава Министерства Обороны',
 };
 
