@@ -29,7 +29,6 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({ title, items, icon = '📚'
                     <ul className="space-y-2">
                         {items.map((item, index) => (
                             <li key={index} className="flex items-center justify-between p-2 hover:bg-gray-100 rounded">
-                                <span className="flex-grow">{item}</span>
                                 <ExamplePhrase text={item} />
                             </li>
                         ))}
