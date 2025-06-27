@@ -8,32 +8,31 @@ const InactiveScheduleSection = () => {
                 <div className="schedule-grid">
                     <div className="schedule-item">
                         <strong>Понедельник</strong><br/>
-                        Александр Пчелинцев<br/>
-                        Анастасия Мелехина
+                        
                     </div>
                     <div className="schedule-item">
                         <strong>Вторник</strong><br/>
-                        Душа Небытия
+                        
                     </div>
                     <div className="schedule-item">
                         <strong>Среда</strong><br/>
-                        Артем Царьков
+                        
                     </div>
                     <div className="schedule-item">
                         <strong>Четверг</strong><br/>
-                        Наталия Агузанова
+                        
                     </div>
                     <div className="schedule-item">
                         <strong>Пятница</strong><br/>
-                        Афанасий Карпов
+                        
                     </div>
                     <div className="schedule-item">
                         <strong>Суббота</strong><br/>
-                        Alex Terrible
+                        
                     </div>
                     <div className="schedule-item">
                         <strong>Воскресенье</strong><br/>
-                        Ilya Ryabykin
+                        
                     </div>
                 </div>
             </div>
