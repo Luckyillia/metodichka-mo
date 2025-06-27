@@ -3,7 +3,9 @@ import DropdownMenu from '../DropdownMenu';
 
 const EventsSection = () => {
     const events = [
-        "Парко хозяйственный день (ПХД)",
+        "Мытье полов",
+        "Поливка цветов",
+        "Замена дверной ручки",
 
     ];
 
