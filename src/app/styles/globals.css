@@ -210,6 +210,24 @@ body {
     grid-column: 1 / -1;
 }
 
+.schedule-grid-1 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.schedule-item-1 {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.schedule-item-1.full-width {
+    grid-column: 1 / -1;
+}
 .document-link {
     color: #0080FF;
     text-decoration: none;
@@ -359,7 +377,6 @@ ul, ol{
 .dropdown-item {
 
 }
-
 /* Контейнер элемента */
 .dropdown-item-container {
     width: 100%;

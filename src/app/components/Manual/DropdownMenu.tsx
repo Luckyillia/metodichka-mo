@@ -43,7 +43,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({ title, items, icon = '📚'
                             if (type === "1") {
                                 const nestedProps = item as DropdownMenuProps;
                                 return (
-                                    <li key={index} className="dropdown-item">
+                                    <li key={index} className="dropdown-item full-width">
                                         <div className="dropdown-item-container">
                                             <DropdownMenu {...nestedProps} />
                                         </div>
