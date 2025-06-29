@@ -1,27 +1,40 @@
 import React from 'react';
 
+interface ParkingData {
+    place: number;
+    person: string;
+    car: string;
+    license: string;
+}
+
+interface TableSectionProps {
+    title: string;
+    data: ParkingData[];
+    headerClass: string;
+}
+
 const ParkingSpaces = () => {
     // Исправленные данные с правильным распределением по колонкам
-    const commandersData = [
-        { place: 1, person: "Akymi_Costello", car: "Ford F-450", license: "В666КС 77" },
+    const commandersData: ParkingData[] = [
+        { place: 1, person: "-", car: "-", license: "-" },
         { place: 2, person: "-", car: "-", license: "-" },
-        { place: 3, person: "Kirill_Good", car: "Mercedes-Benz 560SEL W126", license: "М013ЕР77" },
+        { place: 3, person: "-", car: "-", license: "-" },
         { place: 4, person: "-", car: "-", license: "-" },
-        { place: 5, person: "Aristotel_Roberts", car: "Tesla Model S Plaid", license: "С000АС78" },
+        { place: 5, person: "-", car: "-", license: "-" },
         { place: 6, person: "-", car: "-", license: "-" },
         { place: 7, person: "-", car: "-", license: "-" },
         { place: 8, person: "-", car: "-", license: "-" }
     ];
 
-    const deputiesData = [
+    const deputiesData: ParkingData[] = [
         { place: 9, person: "-", car: "-", license: "-" },
         { place: 10, person: "-", car: "-", license: "-" },
         { place: 11, person: "-", car: "-", license: "-" },
         { place: 12, person: "-", car: "-", license: "-" }
     ];
 
-    const juniorData = [
-        { place: 13, person: "Alexey_Tsarkov", car: "Audi RS7 (C8)", license: "Р777СС78" },
+    const juniorData: ParkingData[] = [
+        { place: 13, person: "-", car: "-", license: "-" },
         { place: 14, person: "-", car: "-", license: "-" },
         { place: 15, person: "-", car: "-", license: "-" },
         { place: 16, person: "-", car: "-", license: "-" },
@@ -42,16 +55,16 @@ const ParkingSpaces = () => {
         { place: 31, person: "-", car: "-", license: "-" },
         { place: 32, person: "-", car: "-", license: "-" },
         { place: 33, person: "-", car: "-", license: "-" },
-        { place: 34, person: "Pavel_Washington", car: "BMW 530d (E39)", license: "А489НК63" },
-        { place: 35, person: "Artemy_Brooklins", car: "BMW 530d (E39)", license: "-" },
-        { place: 36, person: "-", car: "BMW 750I Е38", license: "У001МО77" }
+        { place: 34, person: "-", car: "-", license: "-" },
+        { place: 35, person: "-", car: "-", license: "-" },
+        { place: 36, person: "-", car: "-", license: "-" }
     ];
 
-    const TableSection = ({ title, data, headerClass }) => (
+    const TableSection: React.FC<TableSectionProps> = ({ title, data, headerClass }) => (
         <table className="parking-section-table">
             <thead>
             <tr className={`parking-section-header ${headerClass}`}>
-                <td colSpan="4">{title}</td>
+                <td colSpan={4}>{title}</td>
             </tr>
             <tr>
                 <th>№ места</th>
@@ -77,10 +90,6 @@ const ParkingSpaces = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-purple-800 p-5">
-            <style jsx>{`
-        
-      `}</style>
-
             <div className="parking-table-container">
                 <div className="parking-table-header">
                     <h1>🚗 Распределение парковочных мест</h1>
