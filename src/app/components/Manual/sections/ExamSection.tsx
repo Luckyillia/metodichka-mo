@@ -1,4 +1,5 @@
 import React from 'react';
+import ExamplePhrase from '../ExamplePhrase';
 
 const ExamSection = () => {
     return (
