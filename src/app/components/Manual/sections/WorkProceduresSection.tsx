@@ -3,6 +3,9 @@ import React from 'react';
 const WorkProceduresSection = () => {
     return (
         <>
+            <div className="subsection">
+                <h3>Данный раздел находится в разработке</h3>
+            </div>
             {/*<div className="subsection">
                 <h3>⬆️ При повышении</h3>
                 <ol className="list-decimal pl-5 space-y-2">
@@ -40,9 +43,6 @@ const WorkProceduresSection = () => {
                     <li>Добавляем человека в раздел таблицы "Архив уволенных"</li>
                 </ol>
             </div>*/}
-            <div className="subsection">
-                <h3>Данный раздел находится в разработке</h3>
-            </div>
         </>
     );
 };
