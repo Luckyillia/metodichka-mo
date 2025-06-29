@@ -1,7 +1,7 @@
 import React from 'react';
 import ExamplePhrase from '../ExamplePhrase';
 
-const ExamRulesSection = () => {
+const ExamSection = () => {
     return (
         <>
             <div className="subsection">
@@ -80,4 +80,4 @@ const ExamRulesSection = () => {
     );
 };
 
-export default ExamRulesSection;
+export default ExamSection;
