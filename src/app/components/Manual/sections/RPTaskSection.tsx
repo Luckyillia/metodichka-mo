@@ -2,17 +2,17 @@ import React from 'react';
 import DropdownMenu from "@/app/components/Manual/DropdownMenu";
 
 const RPTaskSection = () => {
-    const rptaskvp = [
+    const RpTaskVP = [
         "Замена колеса",
         "Замена ремня ГРМ",
         "Замена Масла",
     ];
-    const rptaskvpIcon = {
+    const RpTaskVPIcon = {
         "Замена колеса":"💪",
         "Замена ремня ГРМ":"🦵",
         "Замена Масла":"🏃‍♂️",
-    }
-    const rptaskvpContent = {
+    };
+    const RpTaskVPContent = {
         "Замена колеса": [
             "me открыл багажник",
             "do В багажнике лежит ящик с инструментами.",
@@ -76,15 +76,13 @@ const RPTaskSection = () => {
             "me закрыла капот"
         ]
     };
-    const rptaskvvs = [
+    const RpTaskVVS = [
         "Замена колеса",
         "Замена ремня ГРМ",
         "Замена Масла",
     ];
-    const rptaskvvsIcon = {};
-    const rptaskvvsContent = {
-
-    };
+    const RpTaskVVSIcon = {};
+    const RpTaskVVSContent = {};
     return (
         <>
             <div className="subsection">
@@ -95,29 +93,31 @@ const RPTaskSection = () => {
                 <h3>📚 РП задания для военной полиции</h3>
 
                 <div className="space-y-3 mt-4">
-                    {rptaskvp.map((training) => (
+                    {RpTaskVP.map((training) => (
                         <DropdownMenu
                             title={training}
-                            icon={rptaskvpIcon[training as keyof typeof rptaskvpContent] || "📖"}
-                            items={rptaskvpContent[training as keyof typeof rptaskvpContent] || ["Содержание будет добавлено позже"]}
+                            icon={RpTaskVPIcon[training as keyof typeof RpTaskVPContent] || "📖"}
+                            items={RpTaskVPContent[training as keyof typeof RpTaskVPContent] || ["Содержание будет добавлено позже"]}
                         />
                     ))}
                 </div>
-                <div className="subsection">
-                    <h3>📚 РП задания для Военно Воздушных Сил</h3>
+            </div>
+            <div className="subsection">
+                <h3>📚 РП задания для Военно Воздушных Сил</h3>
 
-                    <div className="space-y-3 mt-4">
-                        {rptaskvvs.map((training) => (
-                            <DropdownMenu
-                                title={training}
-                                icon={rptaskvvsIcon[training as keyof typeof rptaskvvsContent] || "📖"}
-                                items={rptaskvvsContent[training as keyof typeof rptaskvvsContent] || ["Содержание будет добавлено позже"]}
-                            />
-                        ))}
-                    </div>
+                <div className="space-y-3 mt-4">
+                    {RpTaskVVS.map((training) => (
+                        <DropdownMenu
+                            title={training}
+                            icon={RpTaskVVSIcon[training as keyof typeof RpTaskVVSContent] || "📖"}
+                            items={RpTaskVVSContent[training as keyof typeof RpTaskVVSContent] || ["Содержание будет добавлено позже"]}
+                        />
+                    ))}
+                </div>
             </div>
         </>
-    );
+    );        
+            
 };
 
 export default RPTaskSection;
