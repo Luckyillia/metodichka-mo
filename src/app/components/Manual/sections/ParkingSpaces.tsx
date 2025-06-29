@@ -16,20 +16,20 @@ interface TableSectionProps {
 const ParkingSpaces = () => {
     // Исправленные данные с правильным распределением по колонкам
     const commandersData: ParkingData[] = [
-        { place: 1, person: "-", car: "-", license: "-" },
+        { place: 1, person: "Akymi_Costello", car: "Ford F-450", license: "В666КС77" },
         { place: 2, person: "-", car: "-", license: "-" },
         { place: 3, person: "-", car: "-", license: "-" },
         { place: 4, person: "-", car: "-", license: "-" },
         { place: 5, person: "-", car: "-", license: "-" },
         { place: 6, person: "-", car: "-", license: "-" },
-        { place: 7, person: "-", car: "-", license: "-" },
+        { place: 7, person: "Kirill_Good", car: "Mercedes-Benz 560SEL W126", license: "М013ЕР77" },
         { place: 8, person: "-", car: "-", license: "-" }
     ];
 
     const deputiesData: ParkingData[] = [
         { place: 9, person: "-", car: "-", license: "-" },
         { place: 10, person: "-", car: "-", license: "-" },
-        { place: 11, person: "-", car: "-", license: "-" },
+        { place: 11, person: "Aristotel_Roberts", car: "Tesla Model S Plaid", license: "С000АС78" },
         { place: 12, person: "-", car: "-", license: "-" }
     ];
 
@@ -37,7 +37,7 @@ const ParkingSpaces = () => {
         { place: 13, person: "-", car: "-", license: "-" },
         { place: 14, person: "-", car: "-", license: "-" },
         { place: 15, person: "-", car: "-", license: "-" },
-        { place: 16, person: "-", car: "-", license: "-" },
+        { place: 16, person: "Alexey_Tsarkov", car: "Audi RS7 (C8)", license: "Р777СС78" },
         { place: 17, person: "-", car: "-", license: "-" },
         { place: 18, person: "-", car: "-", license: "-" },
         { place: 19, person: "-", car: "-", license: "-" },
@@ -56,8 +56,8 @@ const ParkingSpaces = () => {
         { place: 32, person: "-", car: "-", license: "-" },
         { place: 33, person: "-", car: "-", license: "-" },
         { place: 34, person: "-", car: "-", license: "-" },
-        { place: 35, person: "-", car: "-", license: "-" },
-        { place: 36, person: "-", car: "-", license: "-" }
+        { place: 35, person: " Pavel_Washington", car: "BMW 530d (E39)", license: "А489НК63" },
+        { place: 36, person: "Artemy_Brooklins ", car: "BMW 750I Е38", license: "У001МО77" }
     ];
 
     const TableSection: React.FC<TableSectionProps> = ({ title, data, headerClass }) => (
