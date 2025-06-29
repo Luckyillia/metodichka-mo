@@ -14,7 +14,7 @@ const ExamSection = lazy(() => import('@/app/components/Manual/sections/ExamSect
 const AmmunitionSupplies = lazy(() => import('@/app/components/Manual/sections/AmmunitionSupplies'));
 const InterviewConscriptSection = lazy(() => import('@/app/components/Manual/sections/InterviewConscriptSection'));
 const InterviewContractSection = lazy(() => import('@/app/components/Manual/sections/InterviewContractSection'));
-const InactiveScheduleSection = lazy(() => import('@/app/components/Manual/sections/InactiveScheduleSection'));
+const RPTaskSection = lazy(() => import('@/app/components/Manual/sections/RPTaskSection'));
 const WorkProceduresSection = lazy(() => import('@/app/components/Manual/sections/WorkProceduresSection'));
 const AnnouncementsSection = lazy(() => import('@/app/components/Manual/sections/AnnouncementsSection'));
 const ParkingSpaces = lazy(() => import('@/app/components/Manual/sections/ParkingSpaces'));
@@ -29,7 +29,7 @@ const sectionComponents: Record<string, React.ComponentType> = {
     'ammunition-supplies': AmmunitionSupplies,
     'interview-conscript': InterviewConscriptSection,
     'interview-contract': InterviewContractSection,
-    'inactive-schedule': InactiveScheduleSection,
+    'rp-task': RPTaskSection,
     'work-procedures': WorkProceduresSection,
     announcements: AnnouncementsSection,
     'parking-spaces': ParkingSpaces,

@@ -10,7 +10,7 @@ export const navItems: NavItem[] = [
     { id: 'parking-spaces', title: 'Парковочные места ВЧ', icon: '🅿️' },
     { id: 'interview-conscript', title: 'Собеседование (Срочная)', icon: '👤' },
     { id: 'interview-contract', title: 'Собеседование (Контракт)', icon: '👥' },
-    /*{ id: 'inactive-schedule', title: 'График неактивов', icon: '📅' },*/
+    { id: 'rp-task', title: 'РП задания', icon: '⁉️' },
     /*{ id: 'work-procedures', title: 'Процедуры работы', icon: '⚙️' },*/
     { id: 'announcements', title: 'Шаблоны для Доски Объявлений', icon: '📢' },
     { id: 'forum-responses', title: 'Работа по форуму', icon: '💬' },
