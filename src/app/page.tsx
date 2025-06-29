@@ -10,8 +10,7 @@ import OverviewSection from '@/app/components/Manual/sections/OverviewSection';
 const LecturesSection = lazy(() => import('@/app/components/Manual/sections/LecturesSection'));
 const TrainingSection = lazy(() => import('@/app/components/Manual/sections/TrainingSection'));
 const EventsSection = lazy(() => import('@/app/components/Manual/sections/EventsSection'));
-const ExamRulesSection = lazy(() => import('@/app/components/Manual/sections/ExamRulesSection'));
-const ExamConductSection = lazy(() => import('@/app/components/Manual/sections/ExamConductSection'));
+const ExamConductSection = lazy(() => import('@/app/components/Manual/sections/ExamSection'));
 const InterviewConscriptSection = lazy(() => import('@/app/components/Manual/sections/InterviewConscriptSection'));
 const InterviewContractSection = lazy(() => import('@/app/components/Manual/sections/InterviewContractSection'));
 const InactiveScheduleSection = lazy(() => import('@/app/components/Manual/sections/InactiveScheduleSection'));
@@ -25,7 +24,6 @@ const sectionComponents: Record<string, React.ComponentType> = {
     lectures: LecturesSection,
     training: TrainingSection,
     events: EventsSection,
-    'exam-rules': ExamRulesSection,
     'exam-conduct': ExamConductSection,
     'interview-conscript': InterviewConscriptSection,
     'interview-contract': InterviewContractSection,
