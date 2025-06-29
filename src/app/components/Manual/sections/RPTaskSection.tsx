@@ -2,17 +2,17 @@ import React from 'react';
 import DropdownMenu from "@/app/components/Manual/DropdownMenu";
 
 const RPTaskSection = () => {
-    const rptask = [
+    const rptaskvp = [
         "Замена колеса",
         "Замена ремня ГРМ",
         "Замена Масла",
     ];
-    const rptaskIcon = {
+    const rptaskvpIcon = {
         "Замена колеса":"💪",
         "Замена ремня ГРМ":"🦵",
         "Замена Масла":"🏃‍♂️",
     }
-    const rptaskContent = {
+    const rptaskvpContent = {
         "Замена колеса": [
             "me открыл багажник",
             "do В багажнике лежит ящик с инструментами.",
@@ -76,6 +76,15 @@ const RPTaskSection = () => {
             "me закрыла капот"
         ]
     };
+    const rptaskvvs = [
+        "Замена колеса",
+        "Замена ремня ГРМ",
+        "Замена Масла",
+    ];
+    const rptaskvvsIcon = {};
+    const rptaskvvsContent = {
+
+    };
     return (
         <>
             <div className="subsection">
@@ -86,14 +95,26 @@ const RPTaskSection = () => {
                 <h3>📚 РП задания для военной полиции</h3>
 
                 <div className="space-y-3 mt-4">
-                    {rptask.map((training) => (
+                    {rptaskvp.map((training) => (
                         <DropdownMenu
                             title={training}
-                            icon={rptaskIcon[training as keyof typeof rptaskContent] || "📖"}
-                            items={rptaskContent[training as keyof typeof rptaskContent] || ["Содержание будет добавлено позже"]}
+                            icon={rptaskvpIcon[training as keyof typeof rptaskvpContent] || "📖"}
+                            items={rptaskvpContent[training as keyof typeof rptaskvpContent] || ["Содержание будет добавлено позже"]}
                         />
                     ))}
                 </div>
+                <div className="subsection">
+                    <h3>📚 РП задания для Военно Воздушных Сил</h3>
+
+                    <div className="space-y-3 mt-4">
+                        {rptaskvvs.map((training) => (
+                            <DropdownMenu
+                                title={training}
+                                icon={rptaskvvsIcon[training as keyof typeof rptaskvvsContent] || "📖"}
+                                items={rptaskvvsContent[training as keyof typeof rptaskvvsContent] || ["Содержание будет добавлено позже"]}
+                            />
+                        ))}
+                    </div>
             </div>
         </>
     );
