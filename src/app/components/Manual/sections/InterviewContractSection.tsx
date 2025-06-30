@@ -44,18 +44,43 @@ const InterviewContractSection = () => {
 
             <div className="subsection">
                 <h3>🧠 Вопросы NonRP проверки</h3>
-                <ExamplePhrase text="say Что у меня над головой? (Ответ гражданина в зависимости от местности)" />
-                <ExamplePhrase text="say Что такое ДМ, РП, ТК? (Ждёте ответ с выдуманными терминами, НЕ DeadMatch, RolePlay и TransLit)" />
-                <ExamplePhrase text="b ДМ РП ТЛ обозначение с расшифровкой (Ждёте ответ в нонРП чат)" />
-                <ExamplePhrase text="say Что у меня в руках? (Достаёте оружие без отыгровок)" />
-                <ExamplePhrase text="say Как меня зовут? (По шеврону только Фамилия и инициалы)" />
-                <ExamplePhrase text="say Присядьте на корточки. (Ждёте когда гражданский сядет)" />
-                <ExamplePhrase text="b Вставайте (Персонаж НЕ должен встать)" />
-                <ExamplePhrase text="say Вставайте (Гражданский должен встать)" />
-
+                <ExamplePhrase text="say Что у меня над головой?" />
                 <div className="note">
+                    <strong>📌 Примечание:</strong> Ждем ответа от гражданина  в зависимости от местности
+                </div>
+                <ExamplePhrase text="say Что такое ДМ, РП, ТК?" />
+                <div className="note">
+                    <strong>📌 Примечание:</strong> Ждёте ответ с выдуманными терминами, НЕ DeadMatch, RolePlay и TransLit
+                </div>
+                <ExamplePhrase text="b ДМ РП ТЛ обозначение с расшифровкой" />
+                <div className="note">
+                    <strong>📌 Примечание:</strong> Ждёте ответ в нонРП чат
+                </div>
+                <ExamplePhrase text="say Что у меня в руках?" />
+                <div className="note">
+                    <strong>📌 Примечание:</strong> Достаёте оружие без отыгровок
+                </div>
+                <ExamplePhrase text="say Как меня зовут?" />
+                <div className="note">
+                    <strong>📌 Примечание:</strong> По шеврону только Фамилия и инициалы
+                </div>
+                <ExamplePhrase text="say Присядьте на корточки." />
+                <div className="note">
+                    <strong>📌 Примечание:</strong> Ждёте когда гражданский сядет
+                </div>
+                <ExamplePhrase text="b Вставайте" />
+                <div className="note">
+                    <strong>📌 Примечание:</strong> Персонаж НЕ должен встать
+                </div>
+                <ExamplePhrase text="say Вставайте" />
+                <div className="note">
+                    <strong>📌 Примечание:</strong> Гражданский должен встать
+                </div>
+                <div className="note">
+
                     <p><strong>Справочная информация:</strong> <a href="https://info.gtaprovince.ru/aboutMTA/rulestermen" className="document-link" target="_blank" rel="noopener noreferrer">Список RP терминов</a></p>
                 </div>
+
             </div>
 
             <div className="warning">
