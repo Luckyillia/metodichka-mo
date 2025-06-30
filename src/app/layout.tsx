@@ -5,8 +5,8 @@ import './styles/globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Методичка для Старшего Состава МО',
-  description: 'Официальное руководство для старшего состава Министерства Обороны',
+  title: 'Методичка для Министерства Обороны',
+  description: 'Официальное руководство для Министерства Обороны',
 };
 
 export default function RootLayout({
