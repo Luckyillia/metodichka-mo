@@ -40,7 +40,10 @@ const InterviewConscriptSection = () => {
 
             <div className="subsection">
                 <h3>💬 Пример проведения собеседования</h3>
-                <ExamplePhrase text="say Здравствуйте, Вы на собеседование? (Ждёте ответ гражданского)" />
+                <ExamplePhrase text="say Здравствуйте, Вы на собеседование?" />
+                <div className="note">
+                    <strong>📌 Примечание:</strong> Ждёте ответ гражданского
+                </div>
                 <ExamplePhrase text="say Представьтесь, ваше ФИО и возраст." />
                 <ExamplePhrase text="say Предоставьте Ваш паспорт." />
                 <ExamplePhrase text="say Предоставьте Вашу трудовую книжку." />
