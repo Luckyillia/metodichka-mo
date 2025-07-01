@@ -894,6 +894,7 @@ const LecturesSection = () => {
                             title={lecture}
                             icon="📖"
                             items={lectureContent[lecture as keyof typeof lectureContent] || ["Содержание лекции будет добавлено позже"]}
+                            who="ss"
                         />
                     ))}
                 </div>
@@ -909,6 +910,7 @@ const LecturesSection = () => {
                             title={lecture}
                             icon="📖"
                             items={lectureVPContent[lecture as keyof typeof lectureVPContent] || ["Содержание лекции будет добавлено позже"]}
+                            who="ss"
                         />
                     ))}
                 </div>
@@ -924,6 +926,7 @@ const LecturesSection = () => {
                             title={lecture}
                             icon="📖"
                             items={lectureVVSContent[lecture as keyof typeof lectureVVSContent] || ["Содержание лекции будет добавлено позже"]}
+                            who="ss"
                         />
                     ))}
                 </div>
@@ -939,6 +942,7 @@ const LecturesSection = () => {
                             title={lecture}
                             icon="📖"
                             items={lectureSSOContent[lecture as keyof typeof lectureSSOContent] || ["Содержание лекции будет добавлено позже"]}
+                            who="ss"
                         />
                     ))}
                 </div>

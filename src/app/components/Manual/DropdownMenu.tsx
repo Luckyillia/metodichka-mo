@@ -7,9 +7,10 @@ interface DropdownMenuProps {
     icon?: string;
     text?: string;
     type?: "0" | "1"; // Конкретизировали тип
+    who?: "ms" | "ss";
 }
 
-const DropdownMenu: React.FC<DropdownMenuProps> = ({ title, items, icon = '📚', text= "", type = "0"}) => {
+const DropdownMenu: React.FC<DropdownMenuProps> = ({ title, items, icon = '📚', text= "", type = "0", who = "ms"}) => {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
@@ -58,7 +59,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({ title, items, icon = '📚'
                             return (
                                 <li key={index} className="dropdown-item">
                                     <div className="dropdown-item-container">
-                                        <ExamplePhrase text={item as string} />
+                                        <ExamplePhrase text={item as string} type={who}/>
                                     </div>
                                     {index < items.length - 1 && (
                                         <div className="dropdown-separator"></div>
