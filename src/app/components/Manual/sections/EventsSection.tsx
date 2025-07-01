@@ -67,8 +67,6 @@ const EventsSection = () => {
         "Экскурсия: Васильевский остров",
 
     ];
-
-    let Events;
     return (
         <>
             <div className="subsection">
