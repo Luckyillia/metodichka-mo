@@ -76,7 +76,7 @@ const EventsSection = () => {
                 <p>Мероприятия проводятся как на Воинской части, так и за ее пределами.</p>
             </div>
             <div className="subsection">
-                <h3>📚 РП задания для Военной Полиции (ВП)</h3>
+                <h3>📚 Экскурсии</h3>
 
                 <div className="space-y-3 mt-4">
                     {Events.map((training) => (
