@@ -79,7 +79,7 @@ const EventsSection = () => {
                 <h3> Экскурсии</h3>
 
                 <div className="space-y-3 mt-4">
-                    {Events.map((training) => (
+                    {eventsList.map((training) => (
                         <DropdownMenu
                             title={training}
                             icon={eventsIcon[training as keyof typeof eventsContent] || "📖"}
