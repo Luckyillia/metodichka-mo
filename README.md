@@ -10,6 +10,8 @@
 7. [Деплой на Vercel](#деплой-на-vercel)
 8. [Стили CSS](#стили-css)
 9. [Структура проекта](#структура-проекта)
+10. [Dropdown Menu (Выпадающее меню)](#dropdown-menu-выпадающее-меню)
+11. [Защищенные разделы (Protected Sections)](#защищенные-разделы-protected-sections)
 
 ## Клонирование репозитория
 1. Установите [Git](https://git-scm.com/) и [Node.js](https://nodejs.org/) (версия 18+)
@@ -76,6 +78,155 @@ const sectionComponents: Record<string, React.ComponentType> = {
   'new-section': NewSection,
 };
 ```
+
+## Dropdown Menu (Выпадающее меню)
+
+### Как использовать DropdownMenu
+
+1. **Импорт компонента**:
+```tsx
+import DropdownMenu from '../DropdownMenu';
+```
+
+2. **Пример использования**:
+```tsx
+<DropdownMenu
+  title="Название меню"
+  items={[
+    "Пункт 1",
+    "Пункт 2",
+    "Пункт 3"
+  ]}
+  icon="📚" // Опционально
+  searchable={true} // Опционально
+/>
+```
+
+3. **Параметры**:
+- `title`: Заголовок меню
+- `items`: Массив строк для отображения
+- `icon`: Иконка перед заголовком (по умолчанию 📚)
+- `searchable`: Включить поиск по пунктам (по умолчанию false)
+
+4. **Пример с поиском**:
+```tsx
+<DropdownMenu
+  title="Список лекций"
+  items={lectureTitles}
+  icon="📖"
+  searchable={true}
+/>
+```
+
+## Защищенные разделы (Protected Sections)
+
+### Как создать защищенный раздел
+
+1. **Импорт компонента**:
+```tsx
+import ProtectedSection from '../ProtectedSection';
+```
+
+2. **Базовое использование**:
+```tsx
+<ProtectedSection 
+  password="secret123" 
+  hint="Подсказка для пароля"
+>
+  {/* Контент раздела */}
+  <div className="subsection">
+    <h3>Секретный контент</h3>
+    <p>Этот контент виден только после ввода пароля</p>
+  </div>
+</ProtectedSection>
+```
+
+3. **Параметры**:
+- `password`: Пароль для доступа
+- `hint`: Подсказка для пароля (опционально)
+- `icon`: Кастомная иконка (опционально)
+
+4. **Пример с кастомной иконкой**:
+```tsx
+<ProtectedSection 
+  password="topsecret" 
+  hint="Пароль: название организации + год"
+  icon={<ShieldLockIcon />} // Ваш кастомный компонент иконки
+>
+  {/* Контент раздела */}
+</ProtectedSection>
+```
+
+### Особенности работы защищенных разделов
+
+1. После успешного ввода пароля доступ сохраняется в localStorage
+2. По умолчанию дается 3 попытки для ввода пароля
+3. После 3 неверных попыток доступ блокируется на 30 секунд
+4. Можно добавить подсказку для помощи пользователям
+
+### Пример полного защищенного раздела
+
+1. Создайте файл раздела:
+```bash
+touch src/app/components/Manual/sections/SecretDocuments.tsx
+```
+
+2. Заполните содержимое:
+```tsx
+import React from 'react';
+import ProtectedSection from '../ProtectedSection';
+
+const SecretDocuments = () => {
+  return (
+    <ProtectedSection 
+      password="mo2023" 
+      hint="Пароль: аббревиатура + текущий год"
+      icon="🛡️"
+    >
+      <div className="subsection">
+        <h3>Секретные документы</h3>
+        
+        <div className="mt-4 bg-gray-800 text-white p-4 rounded-lg">
+          <h4 className="font-bold mb-2">Конфиденциальная информация:</h4>
+          <ul className="list-disc pl-5 space-y-1">
+            <li>Документ 1: Стратегические планы</li>
+            <li>Документ 2: Список ответственных</li>
+            <li>Документ 3: Коды доступа</li>
+          </ul>
+        </div>
+      </div>
+    </ProtectedSection>
+  );
+};
+
+export default SecretDocuments;
+```
+
+3. Добавьте в навигацию (`src/data/manualData.ts`):
+```typescript
+export const navItems: NavItem[] = [
+  // ... другие разделы
+  { id: 'secret-docs', title: 'Секретные документы', icon: '🛡️' },
+];
+```
+
+4. Добавьте в список компонентов (`src/app/page.tsx`):
+```typescript
+const SecretDocuments = lazy(() => import('@/app/components/Manual/sections/SecretDocuments'));
+
+const sectionComponents: Record<string, React.ComponentType> = {
+  // ... другие компоненты
+  'secret-docs': SecretDocuments,
+};
+```
+
+### Советы по защищенным разделам
+
+1. Используйте разные пароли для разных разделов
+2. Для важных разделов делайте сложные пароли
+3. Добавляйте содержательные подсказки для авторизованных пользователей
+4. Регулярно обновляйте пароли
+5. Для особо важных данных рассмотрите серверную проверку паролей
 
 ## Добавление новых элементов
 
@@ -270,22 +421,46 @@ vercel --prod
 
 ## Структура проекта
 ```
-/src
-  /app
-    /components/Manual
-      /sections          # Компоненты разделов
-      Header.tsx         # Шапка приложения
-      Sidebar.tsx        # Боковая панель
-      ExamplePhrase.tsx  # Примеры фраз
-      ScheduleGrid.tsx   # Сетка расписания
-    /data
-      manualData.ts      # Данные навигации
-    /types
-      manualTypes.ts     # Типы TypeScript
-    layout.tsx           # Основной layout
-    page.tsx             # Главная страница
-  /styles
-    globals.css          # Глобальные стили
+src
+├───app
+│   │   favicon.ico       # Иконка которая возле карточки старая
+│   │   favicon_old.ico   # Иконка которая возле карточки старая
+│   │   layout.tsx        # Основной layout
+│   │   page.tsx          # Главная страница
+│   │   
+│   ├───components
+│   │   └───Manual
+│   │       │   DropdownMenu.tsx       # Элемент который позволяет делать выпадное меню
+│   │       │   ExamplePhrase.tsx      # Элемент который позвволяет копировать текст
+│   │       │   Header.tsx             # Шапка приложения
+│   │       │   ProtectedSection.tsx   # Элемент который позволяет создавать скрытые разделы для СС
+│   │       │   ScheduleGrid.tsx       # Сетка расписания
+│   │       │   SectionContent.tsx     # ХЗ
+│   │       │   Sidebar.tsx            # Боковая панель
+│   │       │
+│   │       └───sections                              # Компоненты разделов
+│   │               AmmunitionSupplies.tsx            # Поставка боеприпасов
+│   │               AnnouncementsSection.tsx          # Примеры в ДО
+│   │               EventsSection.tsx                 # Мероприятия
+│   │               ExamSection.tsx                   # Экзамены
+│   │               ForumResponsesSection.tsx         # Работа по форуму
+│   │               InterviewConscriptSection.tsx     # Собес Срочная
+│   │               InterviewContractSection.tsx      # Собес Контрактная
+│   │               LecturesSection.tsx               # Лекции
+│   │               OverviewSection.tsx               # Содержание
+│   │               ParkingSpaces.tsx                 # Парковочные места ВЧ
+│   │               RPTaskSection.tsx                 # РП задания
+│   │               TrainingSection.tsx               # Тренировки
+│   │               WorkProceduresSection.tsx         # Действия СС в разных случаях
+│   │
+│   └───styles
+│           globals.css    # Глобальные стили
+│
+├───data
+│       manualData.ts      # Данные навигации(Так же последовательность кнопок раздела)
+│
+└───types
+        manualTypes.ts     # Типы TypeScript
 ```
 
 ## Полезные команды
