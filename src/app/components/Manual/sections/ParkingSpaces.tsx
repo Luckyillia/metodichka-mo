@@ -35,9 +35,9 @@ const ParkingSpaces = () => {
 
     const juniorData: ParkingData[] = [
         { place: 13, person: "-", car: "-", license: "-" },
-        { place: 14, person: "-", car: "-", license: "-" },
+        { place: 14, person: "Alexey_Tsarkov", car: "Audi RS7 (C8)", license: "Р777СС78" },
         { place: 15, person: "-", car: "-", license: "-" },
-        { place: 16, person: "Alexey_Tsarkov", car: "Audi RS7 (C8)", license: "Р777СС78" },
+        { place: 16, person: "-", car: "-", license: "-" },
         { place: 17, person: "-", car: "-", license: "-" },
         { place: 18, person: "-", car: "-", license: "-" },
         { place: 19, person: "-", car: "-", license: "-" },
