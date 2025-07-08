@@ -6,7 +6,7 @@ const AnnouncementsSection = () => {
     return (
         <>
             <ProtectedSection
-                password="mo2023"
+                password="MO072025"
                 hint="А вот тебе сюда нельзя.............. Так же здесь моглабы быть ваша реклама)"
             >
                 <div className="subsection">
