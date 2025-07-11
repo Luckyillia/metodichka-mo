@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import '@/app/styles/protectedSection.css';
 
 interface ProtectedSectionProps {
     children: React.ReactNode;

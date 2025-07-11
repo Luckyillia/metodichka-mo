@@ -19,6 +19,7 @@ const WorkProceduresSection = lazy(() => import('@/app/components/Manual/section
 const AnnouncementsSection = lazy(() => import('@/app/components/Manual/sections/AnnouncementsSection'));
 const ParkingSpaces = lazy(() => import('@/app/components/Manual/sections/ParkingSpaces'));
 const ForumResponsesSection = lazy(() => import('@/app/components/Manual/sections/ForumResponsesSection'));
+const GossWaveSection = lazy(() => import('@/app/components/Manual/sections/GossWaveSection'));
 
 const sectionComponents: Record<string, React.ComponentType> = {
     overview: OverviewSection,
@@ -34,6 +35,7 @@ const sectionComponents: Record<string, React.ComponentType> = {
     announcements: AnnouncementsSection,
     'parking-spaces': ParkingSpaces,
     'forum-responses': ForumResponsesSection,
+    'goss-wave': GossWaveSection,
 };
 
 // Функция для получения заголовка по ID

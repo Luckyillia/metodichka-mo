@@ -12,6 +12,7 @@ export const navItems: NavItem[] = [
     { id: 'interview-conscript', title: 'Собеседование (Срочная)', icon: '👤' },
     { id: 'interview-contract', title: 'Собеседование (Контракт)', icon: '👥' },
     /*{ id: 'work-procedures', title: 'Процедуры работы', icon: '⚙️' },*/
+    { id: 'goss-wave', title: 'Гос Волна', icon: '📻' },
     { id: 'announcements', title: 'Шаблоны для Доски Объявлений', icon: '📢' },
     { id: 'forum-responses', title: 'Работа по форуму', icon: '💬' },
 ];

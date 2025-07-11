@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import ExamplePhrase from './ExamplePhrase';
+import '@/app/styles/dropdownMenu.css';
 
 interface DropdownMenuProps {
     title: string;

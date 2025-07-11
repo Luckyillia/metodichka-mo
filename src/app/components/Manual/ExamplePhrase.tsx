@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import '@/app/styles/examplePhrase.css';
 
 interface ExamplePhraseProps {
     text: string;
