@@ -57,7 +57,7 @@ const ParkingSpaces = () => {
         { place: 32, person: "-", car: "-", license: "-" },
         { place: 33, person: "-", car: "-", license: "-" },
         { place: 34, person: "-", car: "-", license: "-" },
-        { place: 35, person: " Pavel_Washington", car: "BMW 530d (E39)", license: "А489НК63" },
+        { place: 35, person: "Pavel_Washington", car: "BMW 530d (E39)", license: "А489НК63" },
         { place: 36, person: "Artemy_Brooklins ", car: "BMW 750I Е38", license: "У001МО77" }
     ];
 
