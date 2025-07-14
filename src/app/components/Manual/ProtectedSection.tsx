@@ -5,12 +5,14 @@ interface ProtectedSectionProps {
     children: React.ReactNode;
     password: string;
     hint?: string;
+    sessionDuration?: number; // в минутах, по умолчанию 5
 }
 
 const ProtectedSection: React.FC<ProtectedSectionProps> = ({
                                                                children,
                                                                password,
-                                                               hint = "Подсказка не предоставлена"
+                                                               hint = "Подсказка не предоставлена",
+                                                               sessionDuration = 5
                                                            }) => {
     const [accessGranted, setAccessGranted] = useState(false);
     const [inputPassword, setInputPassword] = useState('');
@@ -19,8 +21,30 @@ const ProtectedSection: React.FC<ProtectedSectionProps> = ({
     const [attempts, setAttempts] = useState(3);
     const [isBlocked, setIsBlocked] = useState(false);
     const [blockTimeLeft, setBlockTimeLeft] = useState(0);
+    const [sessionTimeLeft, setSessionTimeLeft] = useState(0);
 
-    // Исправление: убираем localStorage, используем состояние компонента
+    // Генерируем уникальный ключ для этого компонента на основе пароля
+    const sessionKey = `protected_section_${btoa(password).substring(0, 10)}`;
+
+    // Проверяем сессию при монтировании компонента
+    useEffect(() => {
+        const savedSession = sessionStorage.getItem(sessionKey);
+        if (savedSession) {
+            const sessionData = JSON.parse(savedSession);
+            const now = Date.now();
+
+            if (now < sessionData.expiresAt) {
+                setAccessGranted(true);
+                const timeLeft = Math.floor((sessionData.expiresAt - now) / 1000);
+                setSessionTimeLeft(timeLeft);
+            } else {
+                // Сессия истекла, удаляем её
+                sessionStorage.removeItem(sessionKey);
+            }
+        }
+    }, [sessionKey]);
+
+    // Обработка блокировки
     useEffect(() => {
         let interval: NodeJS.Timeout;
 
@@ -45,6 +69,31 @@ const ProtectedSection: React.FC<ProtectedSectionProps> = ({
         };
     }, [isBlocked, blockTimeLeft]);
 
+    // Обработка сессии
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
+
+        if (accessGranted && sessionTimeLeft > 0) {
+            interval = setInterval(() => {
+                setSessionTimeLeft(prev => {
+                    if (prev <= 1) {
+                        // Сессия истекла
+                        setAccessGranted(false);
+                        sessionStorage.removeItem(sessionKey);
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+        }
+
+        return () => {
+            if (interval) {
+                clearInterval(interval);
+            }
+        };
+    }, [accessGranted, sessionTimeLeft, sessionKey]);
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -57,6 +106,16 @@ const ProtectedSection: React.FC<ProtectedSectionProps> = ({
             setAccessGranted(true);
             setError('');
             setInputPassword('');
+
+            // Сохраняем сессию
+            const expiresAt = Date.now() + (sessionDuration * 60 * 1000);
+            const sessionData = {
+                expiresAt,
+                grantedAt: Date.now()
+            };
+
+            sessionStorage.setItem(sessionKey, JSON.stringify(sessionData));
+            setSessionTimeLeft(sessionDuration * 60);
         } else {
             const newAttempts = attempts - 1;
             setAttempts(newAttempts);
@@ -73,9 +132,34 @@ const ProtectedSection: React.FC<ProtectedSectionProps> = ({
         }
     };
 
+    const handleLogout = () => {
+        setAccessGranted(false);
+        setSessionTimeLeft(0);
+        sessionStorage.removeItem(sessionKey);
+    };
+
+    const formatTime = (seconds: number) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    };
+
     // Если доступ получен, показываем защищенный контент
     if (accessGranted) {
-        return <>{children}</>;
+        return (
+            <div>
+                <div className="session-indicator">
+                    <span>🔓 Сессия: {formatTime(sessionTimeLeft)}</span>
+                    <button
+                        onClick={handleLogout}
+                        className="session-logout-button"
+                    >
+                        Выйти
+                    </button>
+                </div>
+                {children}
+            </div>
+        );
     }
 
     return (
@@ -86,6 +170,9 @@ const ProtectedSection: React.FC<ProtectedSectionProps> = ({
                     <h3 className="protected-title">Доступ ограничен</h3>
                     <p className="protected-description">
                         Этот раздел защищен паролем. Введите пароль для доступа.
+                    </p>
+                    <p className="session-duration-info">
+                        После успешного входа доступ будет сохранен на {sessionDuration} мин.
                     </p>
                 </div>
 
@@ -141,11 +228,7 @@ const ProtectedSection: React.FC<ProtectedSectionProps> = ({
                     )}
 
                     {!isBlocked && attempts < 3 && (
-                        <div style={{
-                            textAlign: 'center',
-                            color: 'rgba(255, 255, 255, 0.8)',
-                            fontSize: '0.9rem'
-                        }}>
+                        <div className="attempts-counter">
                             Осталось попыток: {attempts}
                         </div>
                     )}
