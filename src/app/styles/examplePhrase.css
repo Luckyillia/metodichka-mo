@@ -8,11 +8,60 @@
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    min-height: 50px;
+    display: flex;
+    align-items: center;
 }
 
 .example-phrase:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Стили для контента фразы */
+.phrase-content {
+    flex: 1;
+    padding-right: 120px; /* Место для кнопки */
+}
+
+/* Стили для многострочных сообщений */
+.multi-line {
+    align-items: flex-start;
+    padding: 15px;
+}
+
+.multi-line .phrase-content {
+    width: 100%;
+}
+
+.phrase-text {
+    margin: 0;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: 1.4;
+    background: none;
+    border: none;
+    outline: none;
+}
+
+/* Стили для однострочных сообщений */
+.single-line {
+    align-items: center;
+    padding: 10px 15px;
+    min-height: 50px;
+}
+
+.single-line .phrase-content {
+    display: flex;
+    align-items: center;
+}
+
+.single-line .phrase-content span {
+    white-space: nowrap;
+    max-width: 100%;
+    word-break: break-word;
 }
 
 /* Градиенты для Младшего Состава (МС) */
@@ -67,6 +116,8 @@
     cursor: pointer;
     font-size: 0.8rem;
     transition: all 0.2s ease;
+    white-space: nowrap;
+    z-index: 1;
 }
 
 .copy-btn:hover {
@@ -75,4 +126,25 @@
 
 .copy-btn.copied {
     background: rgba(46, 204, 113, 0.8);
+}
+
+/* Адаптация для мобильных устройств */
+@media (max-width: 768px) {
+    .example-phrase {
+        padding: 10px;
+    }
+
+    .phrase-content {
+        padding-right: 100px;
+    }
+
+    .copy-btn {
+        right: 5px;
+        padding: 3px 6px;
+        font-size: 0.7rem;
+    }
+
+    .single-line .phrase-content span {
+        white-space: normal;
+    }
 }

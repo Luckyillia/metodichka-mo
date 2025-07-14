@@ -17,13 +17,13 @@ interface TableSectionProps {
 const ParkingSpaces = () => {
     // Исправленные данные с правильным распределением по колонкам
     const commandersData: ParkingData[] = [
-        { place: 1, person: "Akymi_Costello", car: "Ford F-450", license: "В666КС77" },
+        { place: 1, person: "Kirill_Good", car: "Mercedes-Benz 560SEL W126", license: "М013ЕР77" },
         { place: 2, person: "-", car: "-", license: "-" },
         { place: 3, person: "-", car: "-", license: "-" },
         { place: 4, person: "-", car: "-", license: "-" },
         { place: 5, person: "-", car: "-", license: "-" },
         { place: 6, person: "-", car: "-", license: "-" },
-        { place: 7, person: "Kirill_Good", car: "Mercedes-Benz 560SEL W126", license: "М013ЕР77" },
+        { place: 7, person: "-", car: "-", license: "-" },
         { place: 8, person: "-", car: "-", license: "-" }
     ];
 
@@ -58,7 +58,7 @@ const ParkingSpaces = () => {
         { place: 33, person: "-", car: "-", license: "-" },
         { place: 34, person: "-", car: "-", license: "-" },
         { place: 35, person: "Pavel_Washington", car: "BMW 530d (E39)", license: "А489НК63" },
-        { place: 36, person: "Artemy_Brooklins ", car: "BMW 750I Е38", license: "У001МО77" }
+        { place: 36, person: "- ", car: "-", license: "-" }
     ];
 
     const TableSection: React.FC<TableSectionProps> = ({ title, data, headerClass }) => (
