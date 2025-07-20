@@ -5,7 +5,7 @@ interface ProtectedSectionProps {
     children: React.ReactNode;
     password: string;
     hint?: string;
-    sessionDuration?: number; // в минутах, по умолчанию 5
+    sessionDuration?: number; // в минутах, по умолчанию 5, 9999 для безлимитного режима
 }
 
 const ProtectedSection: React.FC<ProtectedSectionProps> = ({
@@ -22,6 +22,7 @@ const ProtectedSection: React.FC<ProtectedSectionProps> = ({
     const [isBlocked, setIsBlocked] = useState(false);
     const [blockTimeLeft, setBlockTimeLeft] = useState(0);
     const [sessionTimeLeft, setSessionTimeLeft] = useState(0);
+    const isUnlimited = sessionDuration === 9999;
 
     // Генерируем уникальный ключ для этого компонента на основе пароля
     const sessionKey = `protected_section_${btoa(password).substring(0, 10)}`;
@@ -33,16 +34,18 @@ const ProtectedSection: React.FC<ProtectedSectionProps> = ({
             const sessionData = JSON.parse(savedSession);
             const now = Date.now();
 
-            if (now < sessionData.expiresAt) {
+            if (isUnlimited || now < sessionData.expiresAt) {
                 setAccessGranted(true);
-                const timeLeft = Math.floor((sessionData.expiresAt - now) / 1000);
-                setSessionTimeLeft(timeLeft);
+                if (!isUnlimited) {
+                    const timeLeft = Math.floor((sessionData.expiresAt - now) / 1000);
+                    setSessionTimeLeft(timeLeft);
+                }
             } else {
                 // Сессия истекла, удаляем её
                 sessionStorage.removeItem(sessionKey);
             }
         }
-    }, [sessionKey]);
+    }, [sessionKey, isUnlimited]);
 
     // Обработка блокировки
     useEffect(() => {
@@ -69,11 +72,11 @@ const ProtectedSection: React.FC<ProtectedSectionProps> = ({
         };
     }, [isBlocked, blockTimeLeft]);
 
-    // Обработка сессии
+    // Обработка сессии (только для ограниченного времени)
     useEffect(() => {
         let interval: NodeJS.Timeout;
 
-        if (accessGranted && sessionTimeLeft > 0) {
+        if (accessGranted && !isUnlimited && sessionTimeLeft > 0) {
             interval = setInterval(() => {
                 setSessionTimeLeft(prev => {
                     if (prev <= 1) {
@@ -92,7 +95,7 @@ const ProtectedSection: React.FC<ProtectedSectionProps> = ({
                 clearInterval(interval);
             }
         };
-    }, [accessGranted, sessionTimeLeft, sessionKey]);
+    }, [accessGranted, sessionTimeLeft, sessionKey, isUnlimited]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -108,14 +111,15 @@ const ProtectedSection: React.FC<ProtectedSectionProps> = ({
             setInputPassword('');
 
             // Сохраняем сессию
-            const expiresAt = Date.now() + (sessionDuration * 60 * 1000);
             const sessionData = {
-                expiresAt,
+                expiresAt: isUnlimited ? Date.now() + 100 * 365 * 24 * 60 * 60 * 1000 : Date.now() + (sessionDuration * 60 * 1000),
                 grantedAt: Date.now()
             };
 
             sessionStorage.setItem(sessionKey, JSON.stringify(sessionData));
-            setSessionTimeLeft(sessionDuration * 60);
+            if (!isUnlimited) {
+                setSessionTimeLeft(sessionDuration * 60);
+            }
         } else {
             const newAttempts = attempts - 1;
             setAttempts(newAttempts);
@@ -149,7 +153,9 @@ const ProtectedSection: React.FC<ProtectedSectionProps> = ({
         return (
             <div>
                 <div className="session-indicator">
-                    <span>🔓 Сессия: {formatTime(sessionTimeLeft)}</span>
+                    <span>
+                        🔓 Сессия: {isUnlimited ? 'Безлимитная' : formatTime(sessionTimeLeft)}
+                    </span>
                     <button
                         onClick={handleLogout}
                         className="session-logout-button"
@@ -172,7 +178,7 @@ const ProtectedSection: React.FC<ProtectedSectionProps> = ({
                         Этот раздел защищен паролем. Введите пароль для доступа.
                     </p>
                     <p className="session-duration-info">
-                        После успешного входа доступ будет сохранен на {sessionDuration} мин.
+                        После успешного входа доступ будет сохранен {isUnlimited ? 'без ограничения по времени' : `на ${sessionDuration} мин.`}
                     </p>
                 </div>
 

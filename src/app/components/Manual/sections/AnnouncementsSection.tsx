@@ -8,6 +8,7 @@ const AnnouncementsSection = () => {
             <ProtectedSection
                 password="MO072025"
                 hint="А вот тебе сюда нельзя.............. Так же здесь моглабы быть ваша реклама)"
+                sessionDuration={9999}
             >
                 <div className="subsection">
                     <h3>Данный раздел находится в разработке</h3>

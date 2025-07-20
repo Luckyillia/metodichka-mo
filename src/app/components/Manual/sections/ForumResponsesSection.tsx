@@ -8,6 +8,7 @@ const ForumResponsesSection = () => {
             <ProtectedSection
                 password="MO072025"
                 hint="А вот тебе сюда нельзя.............. Так же здесь моглабы быть ваша реклама)"
+                sessionDuration={9999}
             >
                 <div className="subsection">
                     <h3>✅ Критерии проверки рапортов</h3>
