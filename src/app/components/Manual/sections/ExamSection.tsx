@@ -81,7 +81,7 @@ const ExamSection = () => {
                 </div>
                 <ExamplePhrase text="say do На трибуне лежит текст военной присяги.  "/>
                 <ExamplePhrase text="say me открыл текст и начал читать:"/>
-                <ExamplePhrase text="say say Я, Прапорщик Томас Гуд, торжественно клянусь на верность...  "/>
+                <ExamplePhrase text="say Я, Прапорщик Томас Гуд, торжественно клянусь на верность...  "/>
                 <ExamplePhrase text="say say своему Отечеству, Республике Провинция.  "/>
                 <ExamplePhrase text="say say Клянусь свято соблюдать Конституцию Республики Провинция...  "/>
                 <ExamplePhrase text="say строго выполнять требования воинских уставов, приказы Командиров и Начальников.  "/>
