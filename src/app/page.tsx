@@ -15,7 +15,7 @@ const AmmunitionSupplies = lazy(() => import('@/app/components/Manual/sections/A
 const InterviewConscriptSection = lazy(() => import('@/app/components/Manual/sections/InterviewConscriptSection'));
 const InterviewContractSection = lazy(() => import('@/app/components/Manual/sections/InterviewContractSection'));
 const RPTaskSection = lazy(() => import('@/app/components/Manual/sections/RPTaskSection'));
-const WorkProceduresSection = lazy(() => import('@/app/components/Manual/sections/WorkProceduresSection'));
+import MinistryOfDefense from "@/app/components/Manual/sections/MinistryOfDefense";
 const AnnouncementsSection = lazy(() => import('@/app/components/Manual/sections/AnnouncementsSection'));
 const ParkingSpaces = lazy(() => import('@/app/components/Manual/sections/ParkingSpaces'));
 const ForumResponsesSection = lazy(() => import('@/app/components/Manual/sections/ForumResponsesSection'));
@@ -31,7 +31,7 @@ const sectionComponents: Record<string, React.ComponentType> = {
     'interview-conscript': InterviewConscriptSection,
     'interview-contract': InterviewContractSection,
     'rp-task': RPTaskSection,
-    'work-procedures': WorkProceduresSection,
+    'ministry-of-defense': MinistryOfDefense,
     announcements: AnnouncementsSection,
     'parking-spaces': ParkingSpaces,
     'forum-responses': ForumResponsesSection,

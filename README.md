@@ -451,7 +451,7 @@ src
 │   │               ParkingSpaces.tsx                 # Парковочные места ВЧ
 │   │               RPTaskSection.tsx                 # РП задания
 │   │               TrainingSection.tsx               # Тренировки
-│   │               WorkProceduresSection.tsx         # Действия СС в разных случаях
+│   │               MinistryOfDefense.tsx         # Действия СС в разных случаях
 │   │
 │   └───styles
 │           globals.css    # Глобальные стили

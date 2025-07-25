@@ -11,7 +11,7 @@ export const navItems: NavItem[] = [
     { id: 'parking-spaces', title: 'Парковочные места ВЧ', icon: '🅿️' },
     { id: 'interview-conscript', title: 'Собеседование (Срочная)', icon: '👤' },
     { id: 'interview-contract', title: 'Собеседование (Контракт)', icon: '👥' },
-    /*{ id: 'work-procedures', title: 'Процедуры работы', icon: '⚙️' },*/
+    { id: 'ministry-of-defense', title: 'Доклады и Тен-коды', icon: '🎤' },
     { id: 'goss-wave', title: 'Гос Волна', icon: '📻' },
     { id: 'announcements', title: 'Шаблоны для Доски Объявлений', icon: '📢' },
     { id: 'forum-responses', title: 'Работа по форуму', icon: '💬' },
