@@ -79,11 +79,11 @@ const ExamSection = () => {
                 <div className="note">
                     <strong>📌 Примечание:</strong>  Первая фотокарточка (скриншот)
                 </div>
-                <ExamplePhrase text="say do На трибуне лежит текст военной присяги.  "/>
-                <ExamplePhrase text="say me открыл текст и начал читать:"/>
-                <ExamplePhrase text="say Я, Прапорщик Томас Гуд, торжественно клянусь на верность...  "/>
-                <ExamplePhrase text="say say своему Отечеству, Республике Провинция.  "/>
-                <ExamplePhrase text="say say Клянусь свято соблюдать Конституцию Республики Провинция...  "/>
+                <ExamplePhrase text="do На трибуне лежит текст военной присяги.  "/>
+                <ExamplePhrase text="me открыл текст и начал читать:"/>
+                <ExamplePhrase text="Я, Прапорщик Томас Гуд, торжественно клянусь на верность...  "/>
+                <ExamplePhrase text="say своему Отечеству, Республике Провинция.  "/>
+                <ExamplePhrase text="say Клянусь свято соблюдать Конституцию Республики Провинция...  "/>
                 <ExamplePhrase text="say строго выполнять требования воинских уставов, приказы Командиров и Начальников.  "/>
                 <div className="note">
                     <strong>📌 Примечание:</strong>  Вторая фотокарточка (скриншот)
