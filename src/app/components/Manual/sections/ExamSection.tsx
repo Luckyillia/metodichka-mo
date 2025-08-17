@@ -80,8 +80,8 @@ const ExamSection = () => {
                     <strong>📌 Примечание:</strong>  Первая фотокарточка (скриншот)
                 </div>
                 <ExamplePhrase text="do На трибуне лежит текст военной присяги.  "/>
-                <ExamplePhrase text="me открыл текст и начал читать:"/>
-                <ExamplePhrase text="Я, Прапорщик Томас Гуд, торжественно клянусь на верность...  "/>
+                <ExamplePhrase text="me открыл текст и начал читать"/>
+                <ExamplePhrase text="say Я, Прапорщик Томас Гуд, торжественно клянусь на верность...  "/>
                 <ExamplePhrase text="say своему Отечеству, Республике Провинция.  "/>
                 <ExamplePhrase text="say Клянусь свято соблюдать Конституцию Республики Провинция...  "/>
                 <ExamplePhrase text="say строго выполнять требования воинских уставов, приказы Командиров и Начальников.  "/>
@@ -90,7 +90,7 @@ const ExamSection = () => {
                 </div>
                 <ExamplePhrase text="say Клянусь достойно исполнять воинский долг, мужественно защищать свободу...  "/>
                 <ExamplePhrase text="say независимость и конституционный строй Провинции, народ и Отечество."/>
-                <ExamplePhrase text="me закрыл текст военной присяги."/>
+                <ExamplePhrase text="me закрыл текст военной присяги"/>
                 <ExamplePhrase text="do Текст военной присяги закрыт."/>
                 <ExamplePhrase text="say На этом сдача присяги Министерства Обороны окончена!" type="ss" />
                 <div className="note">
