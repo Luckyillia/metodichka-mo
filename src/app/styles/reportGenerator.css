@@ -1,0 +1,263 @@
+/* Группы ввода */
+.input-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1.5rem;
+}
+
+.input-group label {
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+    position: relative;
+}
+
+.input-group label::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    transition: width 0.3s ease;
+}
+
+.input-group:focus-within label::after {
+    width: 100%;
+}
+
+/* Стили для input и select - делаем прозрачными */
+.input-group input,
+.input-group select {
+    padding: 1rem 1.2rem;
+    border: 2px solid rgba(226, 232, 240, 0.6);
+    border-radius: 12px;
+    font-size: 1rem;
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.input-group input:focus,
+.input-group select:focus {
+    outline: none;
+    border-color: rgba(102, 126, 234, 0.8);
+    background: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    transform: translateY(-2px);
+}
+
+.input-group input::placeholder {
+    color: #000000;
+    font-style: italic;
+}
+
+/* Стили для строк элементов */
+.item-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 2fr auto;
+    gap: 0.5rem;
+    align-items: end;
+    margin-bottom: 0.5rem;
+}
+
+.item-row input {
+    margin-bottom: 0;
+    background: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(5px);
+    border: 2px solid rgba(226, 232, 240, 0.6);
+    border-radius: 10px;
+    padding: 0.8rem 1rem;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.item-row input:focus {
+    border-color: rgba(102, 126, 234, 0.8);
+    background: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+}
+.item-row input::placeholder {
+    color: #000000;
+    font-style: italic;
+}
+/* Кнопки */
+.add-btn,
+.remove-btn {
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
+}
+
+.add-btn {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(72, 187, 120, 0.3);
+    margin-top: 1rem;
+    width: 100%;
+}
+
+.add-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(72, 187, 120, 0.4);
+}
+
+.add-btn:active {
+    transform: translateY(0);
+}
+
+/* Кнопка удаления в стиле текста - прозрачная и минималистичная */
+.remove-btn {
+    background: transparent;
+    color: #e53e3e;
+    border: 1px solid rgba(229, 62, 62, 0.3);
+    box-shadow: none;
+    padding: 0.6rem 1.2rem;
+    white-space: nowrap;
+    backdrop-filter: blur(5px);
+    text-transform: none;
+    letter-spacing: normal;
+    font-weight: 500;
+}
+
+.remove-btn:hover {
+    background: rgba(229, 62, 62, 0.1);
+    color: #c53030;
+    border-color: rgba(229, 62, 62, 0.5);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(229, 62, 62, 0.15);
+}
+
+.remove-btn:active {
+    transform: translateY(0);
+    background: rgba(229, 62, 62, 0.2);
+}
+
+/* Эффект волны только для кнопки добавления */
+.add-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.add-btn:active::before {
+    width: 300px;
+    height: 300px;
+}
+
+/* Адаптивный дизайн */
+@media (max-width: 768px) {
+    .subsection {
+        padding: 1.5rem;
+        border-radius: 16px;
+    }
+
+    .item-row {
+        grid-template-columns: 1fr;
+        gap: 0.8rem;
+        padding: 1rem;
+    }
+
+    .remove-btn {
+        justify-self: end;
+        width: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .subsection {
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .subsection h3 {
+        font-size: 1.2rem;
+    }
+}
+
+/* Стили для секции с отчетом */
+.subsection:last-child {
+    background: linear-gradient(135deg, rgba(26, 32, 44, 0.95) 0%, rgba(45, 55, 72, 0.95) 100%);
+    backdrop-filter: blur(10px);
+    color: #e2e8f0;
+    border: 1px solid rgba(74, 85, 104, 0.6);
+}
+
+.subsection:last-child h3 {
+    color: #e2e8f0;
+    border-bottom-color: #4facfe;
+}
+
+.subsection:last-child h3::before {
+    content: '📄';
+}
+/* Стили для чекбокса в разделе основной информации */
+.input-group input[type="checkbox"] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border: 2px solid #007bff; /* Синий цвет границы для акцента */
+    border-radius: 6px; /* Закругленные углы для современного вида */
+    background-color: #ffffff; /* Белый фон по умолчанию */
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s ease; /* Плавные переходы для анимации */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Легкая тень для глубины */
+}
+
+.input-group input[type="checkbox"]:checked {
+    background-color: #007bff; /* Синий фон при выборе */
+    border-color: #0056b3; /* Темнее для контраста */
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3); /* Усиленная тень при активации */
+}
+
+.input-group input[type="checkbox"]:checked::after {
+    content: "\2713"; /* Символ галочки */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 16px;
+    color: #ffffff; /* Белый цвет галочки */
+    font-weight: bold;
+}
+
+.input-group input[type="checkbox"]:hover {
+    border-color: #0056b3; /* Изменение цвета границы при наведении */
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2); /* Легкая анимация при hover */
+}
+
+.input-group input[type="checkbox"]:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25); /* Фокус-ринг для доступности */
+}
+
+/* Стили для лейбла рядом с чекбоксом для лучшей интеграции */
+.input-group label {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Пространство между лейблом и чекбоксом */
+    font-size: 16px;
+    color: #333; /* Темный цвет текста */
+    cursor: pointer;
+}

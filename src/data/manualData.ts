@@ -15,4 +15,5 @@ export const navItems: NavItem[] = [
     { id: 'goss-wave', title: 'Гос Волна', icon: '📻' },
     { id: 'announcements', title: 'Шаблоны для Доски Объявлений', icon: '📢' },
     { id: 'forum-responses', title: 'Работа по форуму', icon: '💬' },
+    { id: 'report-generator', title: 'Генератор отчетов', icon: '📝' },
 ];

@@ -6,7 +6,7 @@ const ForumResponsesSection = () => {
     return (
         <>
             <ProtectedSection
-                password="MO082025"
+                password="Y7-nBo"
                 hint="А вот тебе сюда нельзя.............. Так же здесь моглабы быть ваша реклама)"
                 sessionDuration={9999}
             >
