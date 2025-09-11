@@ -29,8 +29,7 @@ const ReportGenerator = () => {
     const [trainings, setTrainings] = useState([{ date: '', name: '', link: '' }]);
     const [shootings, setShootings] = useState([{ date: '', name: '', link: '' }]);
     const [exercises, setExercises] = useState([{ date: '', name: '', link: '' }]);
-    const [attendanceType, setAttendanceType] = useState('leader'); // 'leader' or 'grp'
-    const [attendanceLink, setAttendanceLink] = useState('');
+    const [attendances, setAttendances] = useState([{ type: 'leader', link: '' }]);
 
     // Специфичные данные для разных должностей
     const [contractStats, setContractStats] = useState({ arrived: 0, left: 0, current: 0 });
@@ -204,12 +203,17 @@ const ReportGenerator = () => {
         }
 
         // Посещение мероприятий (теперь объединено: или у лидера, или на ГРП)
-        if (attendanceLink) {
-            if (attendanceType === 'leader') {
-                report += `Присутствие на качественном мероприятии от лидера: ${attendanceLink || 'не указано'}\n\n`;
-            } else if (attendanceType === 'grp') {
-                report += `Присутствие на ГРП: ${attendanceLink || 'не указано'}\n\n`;
-            }
+        if (attendances.length > 0 && attendances[0].link) {
+            attendances.forEach(item => {
+                if (item.link) {
+                    if (item.type === 'leader') {
+                        report += `Присутствие на качественном мероприятии от лидера: ${item.link}\n`;
+                    } else if (item.type === 'grp') {
+                        report += `Присутствие на ГРП: ${item.link}\n`;
+                    }
+                }
+            });
+            report += `\n`;
         }
 
         report += `Дата: ${new Date().toLocaleDateString('ru-RU')}\n`;
@@ -867,23 +871,56 @@ const ReportGenerator = () => {
 
                 {isSectionVisible({sectionName: 'attendance'}) && (
                     <div className="subsection">
-                        <h3>Посещение мероприятий (или у лидера, или на ГРП)</h3>
-                        <div className="input-group">
-                            <label>Тип:</label>
-                            <select value={attendanceType} onChange={(e) => setAttendanceType(e.target.value)}>
-                                <option value="leader">Качественное мероприятие от лидера</option>
-                                <option value="grp">ГРП</option>
-                            </select>
-                        </div>
-                        <div className="input-group">
-                            <label>Ссылка на доказательство:</label>
-                            <input
-                                type="text"
-                                value={attendanceLink}
-                                onChange={(e) => setAttendanceLink(e.target.value)}
-                                placeholder="Ссылка на доказательство"
-                            />
-                        </div>
+                        <h3>Посещение мероприятий</h3>
+                        {attendances.map((item, index) => (
+                            <div key={index} className="item-row">
+                                <select
+                                    value={item.type}
+                                    onChange={(e) => handleItemChange({
+                                        setter: setAttendances,
+                                        currentItems: attendances,
+                                        index: index,
+                                        field: 'type',
+                                        value: e.target.value
+                                    })}
+                                >
+                                    <option value="leader">Качественное мероприятие от лидера</option>
+                                    <option value="grp">ГРП</option>
+                                </select>
+                                <input
+                                    type="text"
+                                    value={item.link}
+                                    onChange={(e) => handleItemChange({
+                                        setter: setAttendances,
+                                        currentItems: attendances,
+                                        index: index,
+                                        field: 'link',
+                                        value: e.target.value
+                                    })}
+                                    placeholder="Ссылка на доказательство"
+                                />
+                                <button
+                                    className="remove-btn"
+                                    onClick={() => handleRemoveItem({
+                                        setter: setAttendances,
+                                        currentItems: attendances,
+                                        index: index
+                                    })}
+                                >
+                                    Удалить
+                                </button>
+                            </div>
+                        ))}
+                        <button
+                            className="add-btn"
+                            onClick={() => handleAddItem({
+                                setter: setAttendances,
+                                currentItems: attendances,
+                                template: { type: 'leader', link: '' }
+                            })}
+                        >
+                            Добавить посещение мероприятия
+                        </button>
                     </div>
                 )}
 
