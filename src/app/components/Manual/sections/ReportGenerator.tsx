@@ -3,8 +3,17 @@ import ExamplePhrase from '../ExamplePhrase';
 import ProtectedSection from "../ProtectedSection";
 import "@/app/styles/reportGenerator.css";
 
+// Define the position type
+type Position =
+    | 'Начальник Гарнизона'
+    | 'Начальник Штаба'
+    | 'Начальник Штаба Гражданской Обороны'
+    | 'Начальник по Военной Профессиональной Подготовке'
+    | 'Командир Подразделения'
+    | 'Заместитель Командира Подразделения';
+
 const ReportGenerator = () => {
-    const [position, setPosition] = useState('Начальник Гарнизона');
+    const [position, setPosition] = useState<Position>('Начальник Гарнизона');
     const [fullName, setFullName] = useState('');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
@@ -30,13 +39,19 @@ const ReportGenerator = () => {
     const [divisionStats, setDivisionStats] = useState({ left: 0, arrived: 0, current: 0 });
 
     // Видимые разделы в зависимости от должности
-    const visibleSections = {
+    // Видимые разделы в зависимости от должности - now with proper typing
+    const visibleSections: Record<Position, string[]> = {
         'Начальник Гарнизона': ['interviews', 'events', 'lectures', 'drills', 'exercises', 'shootings', 'attendance'],
         'Начальник Штаба': ['interviews', 'events', 'lectures', 'drills', 'exercises', 'attendance'],
         'Начальник Штаба Гражданской Обороны': ['interviews', 'events', 'lectures', 'drills', 'exercises', 'attendance'],
         'Начальник по Военной Профессиональной Подготовке': ['interviews', 'events', 'lectures', 'drills', 'trainings', 'exercises', 'attendance'],
         'Командир Подразделения': ['interviews', 'events', 'lectures', 'drills', 'trainings', 'exercises', 'shootings', 'attendance'],
         'Заместитель Командира Подразделения': ['interviews', 'events', 'lectures', 'trainings', 'attendance'],
+    };
+
+    // Helper function to check if a section is visible for current position
+    const isSectionVisible = ({sectionName}: { sectionName: any }) => {
+        return visibleSections[position]?.includes(sectionName) || false;
     };
 
     // Генерация дат по умолчанию (текущая неделя)
@@ -47,26 +62,32 @@ const ReportGenerator = () => {
         const end = new Date(today);
         end.setDate(today.getDate() + (6 - today.getDay())); // Суббота текущей недели
 
-        setStartDate(formatDate(start));
-        setEndDate(formatDate(end));
+        setStartDate(formatDate({date: start}));
+        setEndDate(formatDate({date: end}));
     }, []);
 
-    const formatDate = (date) => {
+    const formatDate = ({date}: { date: any }) => {
         return date.toLocaleDateString('ru-RU');
     };
 
-    const handleAddItem = (setter, currentItems, template) => {
+    const handleAddItem = ({setter, currentItems, template}: { setter: any, currentItems: any, template: any }) => {
         setter([...currentItems, template]);
     };
 
-    const handleRemoveItem = (setter, currentItems, index) => {
+    const handleRemoveItem = ({setter, currentItems, index}: { setter: any, currentItems: any, index: any }) => {
         if (currentItems.length === 1) return;
         const newItems = [...currentItems];
         newItems.splice(index, 1);
         setter(newItems);
     };
 
-    const handleItemChange = (setter, currentItems, index, field, value) => {
+    const handleItemChange = ({setter, currentItems, index, field, value}: {
+        setter: any,
+        currentItems: any,
+        index: any,
+        field: any,
+        value: any
+    }) => {
         const newItems = [...currentItems];
         newItems[index][field] = value;
         setter(newItems);
@@ -312,17 +333,21 @@ const ReportGenerator = () => {
                     <h3>Основная информация</h3>
                     <div className="input-group">
                         <label>Должность:</label>
-                        <select value={position} onChange={(e) => setPosition(e.target.value)}>
+                        <select value={position} onChange={(e) => setPosition(e.target.value as Position)}>
                             <option value="Начальник Гарнизона">Начальник Гарнизона</option>
                             <option value="Начальник Штаба">Начальник Штаба</option>
-                            <option value="Начальник Штаба Гражданской Обороны">Начальник Штаба Гражданской Обороны</option>
-                            <option value="Начальник по Военной Профессиональной Подготовке">Начальник по Военной Профессиональной Подготовке</option>
+                            <option value="Начальник Штаба Гражданской Обороны">Начальник Штаба Гражданской Обороны
+                            </option>
+                            <option value="Начальник по Военной Профессиональной Подготовке">Начальник по Военной
+                                Профессиональной Подготовке
+                            </option>
                             <option value="Командир Подразделения">Командир Подразделения</option>
-                            <option value="Заместитель Командира Подразделения">Заместитель Командира Подразделения</option>
+                            <option value="Заместитель Командира Подразделения">Заместитель Командира Подразделения
+                            </option>
                         </select>
                     </div>
                     <div className="input-group">
-                        <label>ФИО:</label>
+                    <label>ФИО:</label>
                         <input
                             type="text"
                             value={fullName}
@@ -378,7 +403,7 @@ const ReportGenerator = () => {
 
                 {renderPositionSpecificFields()}
 
-                {visibleSections[position].includes('interviews') && (
+                {isSectionVisible({sectionName: 'interviews'}) && (
                     <div className="subsection">
                         <h3>Собеседования</h3>
                         {interviews.map((item, index) => (
@@ -386,24 +411,46 @@ const ReportGenerator = () => {
                                 <input
                                     type="date"
                                     value={item.date}
-                                    onChange={(e) => handleItemChange(setInterviews, interviews, index, 'date', e.target.value)}
+                                    onChange={(e) => handleItemChange({
+                                        setter: setInterviews,
+                                        currentItems: interviews,
+                                        index: index,
+                                        field: 'date',
+                                        value: e.target.value
+                                    })}
                                     placeholder="Дата (дд.мм.гггг)"
                                 />
                                 <input
                                     type="text"
                                     value={item.type}
-                                    onChange={(e) => handleItemChange(setInterviews, interviews, index, 'type', e.target.value)}
+                                    onChange={(e) => handleItemChange({
+                                        setter: setInterviews,
+                                        currentItems: interviews,
+                                        index: index,
+                                        field: 'type',
+                                        value: e.target.value
+                                    })}
                                     placeholder="Контракт или Срочка"
                                 />
                                 <input
                                     type="text"
                                     value={item.link}
-                                    onChange={(e) => handleItemChange(setInterviews, interviews, index, 'link', e.target.value)}
+                                    onChange={(e) => handleItemChange({
+                                        setter: setInterviews,
+                                        currentItems: interviews,
+                                        index: index,
+                                        field: 'link',
+                                        value: e.target.value
+                                    })}
                                     placeholder="Ссылка на доказательство"
                                 />
                                 <button
                                     className="remove-btn"
-                                    onClick={() => handleRemoveItem(setInterviews, interviews, index)}
+                                    onClick={() => handleRemoveItem({
+                                        setter: setInterviews,
+                                        currentItems: interviews,
+                                        index: index
+                                    })}
                                 >
                                     Удалить
                                 </button>
@@ -411,14 +458,18 @@ const ReportGenerator = () => {
                         ))}
                         <button
                             className="add-btn"
-                            onClick={() => handleAddItem(setInterviews, interviews, { date: '', type: '', link: '' })}
+                            onClick={() => handleAddItem({
+                                setter: setInterviews,
+                                currentItems: interviews,
+                                template: {date: '', type: '', link: ''}
+                            })}
                         >
                             Добавить собеседование
                         </button>
                     </div>
                 )}
 
-                {visibleSections[position].includes('events') && (
+                {isSectionVisible({sectionName: 'events'}) && (
                     <div className="subsection">
                         <h3>Мероприятия</h3>
                         {events.map((item, index) => (
@@ -426,24 +477,46 @@ const ReportGenerator = () => {
                                 <input
                                     type="date"
                                     value={item.date}
-                                    onChange={(e) => handleItemChange(setEvents, events, index, 'date', e.target.value)}
+                                    onChange={(e) => handleItemChange({
+                                        setter: setEvents,
+                                        currentItems: events,
+                                        index: index,
+                                        field: 'date',
+                                        value: e.target.value
+                                    })}
                                     placeholder="Дата (дд.мм.гггг)"
                                 />
                                 <input
                                     type="text"
                                     value={item.name}
-                                    onChange={(e) => handleItemChange(setEvents, events, index, 'name', e.target.value)}
+                                    onChange={(e) => handleItemChange({
+                                        setter: setEvents,
+                                        currentItems: events,
+                                        index: index,
+                                        field: 'name',
+                                        value: e.target.value
+                                    })}
                                     placeholder="Название мероприятия"
                                 />
                                 <input
                                     type="text"
                                     value={item.link}
-                                    onChange={(e) => handleItemChange(setEvents, events, index, 'link', e.target.value)}
+                                    onChange={(e) => handleItemChange({
+                                        setter: setEvents,
+                                        currentItems: events,
+                                        index: index,
+                                        field: 'link',
+                                        value: e.target.value
+                                    })}
                                     placeholder="Ссылка на доказательство"
                                 />
                                 <button
                                     className="remove-btn"
-                                    onClick={() => handleRemoveItem(setEvents, events, index)}
+                                    onClick={() => handleRemoveItem({
+                                        setter: setEvents,
+                                        currentItems: events,
+                                        index: index
+                                    })}
                                 >
                                     Удалить
                                 </button>
@@ -451,14 +524,18 @@ const ReportGenerator = () => {
                         ))}
                         <button
                             className="add-btn"
-                            onClick={() => handleAddItem(setEvents, events, { date: '', name: '', link: '' })}
+                            onClick={() => handleAddItem({
+                                setter: setEvents,
+                                currentItems: events,
+                                template: {date: '', name: '', link: ''}
+                            })}
                         >
                             Добавить мероприятие
                         </button>
                     </div>
                 )}
 
-                {visibleSections[position].includes('lectures') && (
+                {isSectionVisible({sectionName: 'lectures'}) && (
                     <div className="subsection">
                         <h3>Лекции</h3>
                         {lectures.map((item, index) => (
@@ -466,24 +543,46 @@ const ReportGenerator = () => {
                                 <input
                                     type="date"
                                     value={item.date}
-                                    onChange={(e) => handleItemChange(setLectures, lectures, index, 'date', e.target.value)}
+                                    onChange={(e) => handleItemChange({
+                                        setter: setLectures,
+                                        currentItems: lectures,
+                                        index: index,
+                                        field: 'date',
+                                        value: e.target.value
+                                    })}
                                     placeholder="Дата (дд.мм.гггг)"
                                 />
                                 <input
                                     type="text"
                                     value={item.name}
-                                    onChange={(e) => handleItemChange(setLectures, lectures, index, 'name', e.target.value)}
+                                    onChange={(e) => handleItemChange({
+                                        setter: setLectures,
+                                        currentItems: lectures,
+                                        index: index,
+                                        field: 'name',
+                                        value: e.target.value
+                                    })}
                                     placeholder="Название лекции"
                                 />
                                 <input
                                     type="text"
                                     value={item.link}
-                                    onChange={(e) => handleItemChange(setLectures, lectures, index, 'link', e.target.value)}
+                                    onChange={(e) => handleItemChange({
+                                        setter: setLectures,
+                                        currentItems: lectures,
+                                        index: index,
+                                        field: 'link',
+                                        value: e.target.value
+                                    })}
                                     placeholder="Ссылка на доказательство"
                                 />
                                 <button
                                     className="remove-btn"
-                                    onClick={() => handleRemoveItem(setLectures, lectures, index)}
+                                    onClick={() => handleRemoveItem({
+                                        setter: setLectures,
+                                        currentItems: lectures,
+                                        index: index
+                                    })}
                                 >
                                     Удалить
                                 </button>
@@ -491,14 +590,18 @@ const ReportGenerator = () => {
                         ))}
                         <button
                             className="add-btn"
-                            onClick={() => handleAddItem(setLectures, lectures, { date: '', name: '', link: '' })}
+                            onClick={() => handleAddItem({
+                                setter: setLectures,
+                                currentItems: lectures,
+                                template: {date: '', name: '', link: ''}
+                            })}
                         >
                             Добавить лекцию
                         </button>
                     </div>
                 )}
 
-                {visibleSections[position].includes('drills') && (
+                {isSectionVisible({sectionName: 'drills'}) && (
                     <div className="subsection">
                         <h3>Строевая подготовка</h3>
                         {drills.map((item, index) => (
@@ -506,24 +609,46 @@ const ReportGenerator = () => {
                                 <input
                                     type="date"
                                     value={item.date}
-                                    onChange={(e) => handleItemChange(setDrills, drills, index, 'date', e.target.value)}
+                                    onChange={(e) => handleItemChange({
+                                        setter: setDrills,
+                                        currentItems: drills,
+                                        index: index,
+                                        field: 'date',
+                                        value: e.target.value
+                                    })}
                                     placeholder="Дата (дд.мм.гггг)"
                                 />
                                 <input
                                     type="text"
                                     value={item.name}
-                                    onChange={(e) => handleItemChange(setDrills, drills, index, 'name', e.target.value)}
+                                    onChange={(e) => handleItemChange({
+                                        setter: setDrills,
+                                        currentItems: drills,
+                                        index: index,
+                                        field: 'name',
+                                        value: e.target.value
+                                    })}
                                     placeholder="Название"
                                 />
                                 <input
                                     type="text"
                                     value={item.link}
-                                    onChange={(e) => handleItemChange(setDrills, drills, index, 'link', e.target.value)}
+                                    onChange={(e) => handleItemChange({
+                                        setter: setDrills,
+                                        currentItems: drills,
+                                        index: index,
+                                        field: 'link',
+                                        value: e.target.value
+                                    })}
                                     placeholder="Ссылка на доказательство"
                                 />
                                 <button
                                     className="remove-btn"
-                                    onClick={() => handleRemoveItem(setDrills, drills, index)}
+                                    onClick={() => handleRemoveItem({
+                                        setter: setDrills,
+                                        currentItems: drills,
+                                        index: index
+                                    })}
                                 >
                                     Удалить
                                 </button>
@@ -531,14 +656,18 @@ const ReportGenerator = () => {
                         ))}
                         <button
                             className="add-btn"
-                            onClick={() => handleAddItem(setDrills, drills, { date: '', name: '', link: '' })}
+                            onClick={() => handleAddItem({
+                                setter: setDrills,
+                                currentItems: drills,
+                                template: {date: '', name: '', link: ''}
+                            })}
                         >
                             Добавить строевую подготовку
                         </button>
                     </div>
                 )}
 
-                {visibleSections[position].includes('exercises') && (
+                {isSectionVisible({sectionName: 'exercises'}) && (
                     <div className="subsection">
                         <h3>Учения</h3>
                         {exercises.map((item, index) => (
@@ -546,24 +675,46 @@ const ReportGenerator = () => {
                                 <input
                                     type="date"
                                     value={item.date}
-                                    onChange={(e) => handleItemChange(setExercises, exercises, index, 'date', e.target.value)}
+                                    onChange={(e) => handleItemChange({
+                                        setter: setExercises,
+                                        currentItems: exercises,
+                                        index: index,
+                                        field: 'date',
+                                        value: e.target.value
+                                    })}
                                     placeholder="Дата (дд.мм.гггг)"
                                 />
                                 <input
                                     type="text"
                                     value={item.name}
-                                    onChange={(e) => handleItemChange(setExercises, exercises, index, 'name', e.target.value)}
+                                    onChange={(e) => handleItemChange({
+                                        setter: setExercises,
+                                        currentItems: exercises,
+                                        index: index,
+                                        field: 'name',
+                                        value: e.target.value
+                                    })}
                                     placeholder="Название"
                                 />
                                 <input
                                     type="text"
                                     value={item.link}
-                                    onChange={(e) => handleItemChange(setExercises, exercises, index, 'link', e.target.value)}
+                                    onChange={(e) => handleItemChange({
+                                        setter: setExercises,
+                                        currentItems: exercises,
+                                        index: index,
+                                        field: 'link',
+                                        value: e.target.value
+                                    })}
                                     placeholder="Ссылка на доказательство"
                                 />
                                 <button
                                     className="remove-btn"
-                                    onClick={() => handleRemoveItem(setExercises, exercises, index)}
+                                    onClick={() => handleRemoveItem({
+                                        setter: setExercises,
+                                        currentItems: exercises,
+                                        index: index
+                                    })}
                                 >
                                     Удалить
                                 </button>
@@ -571,14 +722,18 @@ const ReportGenerator = () => {
                         ))}
                         <button
                             className="add-btn"
-                            onClick={() => handleAddItem(setExercises, exercises, { date: '', name: '', link: '' })}
+                            onClick={() => handleAddItem({
+                                setter: setExercises,
+                                currentItems: exercises,
+                                template: {date: '', name: '', link: ''}
+                            })}
                         >
                             Добавить учение
                         </button>
                     </div>
                 )}
 
-                {visibleSections[position].includes('shootings') && (
+                {isSectionVisible({sectionName: 'shootings'}) && (
                     <div className="subsection">
                         <h3>Учебные стрельбы</h3>
                         {shootings.map((item, index) => (
@@ -586,24 +741,46 @@ const ReportGenerator = () => {
                                 <input
                                     type="date"
                                     value={item.date}
-                                    onChange={(e) => handleItemChange(setShootings, shootings, index, 'date', e.target.value)}
+                                    onChange={(e) => handleItemChange({
+                                        setter: setShootings,
+                                        currentItems: shootings,
+                                        index: index,
+                                        field: 'date',
+                                        value: e.target.value
+                                    })}
                                     placeholder="Дата (дд.мм.гггг)"
                                 />
                                 <input
                                     type="text"
                                     value={item.name}
-                                    onChange={(e) => handleItemChange(setShootings, shootings, index, 'name', e.target.value)}
+                                    onChange={(e) => handleItemChange({
+                                        setter: setShootings,
+                                        currentItems: shootings,
+                                        index: index,
+                                        field: 'name',
+                                        value: e.target.value
+                                    })}
                                     placeholder="Название"
                                 />
                                 <input
                                     type="text"
                                     value={item.link}
-                                    onChange={(e) => handleItemChange(setShootings, shootings, index, 'link', e.target.value)}
+                                    onChange={(e) => handleItemChange({
+                                        setter: setShootings,
+                                        currentItems: shootings,
+                                        index: index,
+                                        field: 'link',
+                                        value: e.target.value
+                                    })}
                                     placeholder="Ссылка на доказательство"
                                 />
                                 <button
                                     className="remove-btn"
-                                    onClick={() => handleRemoveItem(setShootings, shootings, index)}
+                                    onClick={() => handleRemoveItem({
+                                        setter: setShootings,
+                                        currentItems: shootings,
+                                        index: index
+                                    })}
                                 >
                                     Удалить
                                 </button>
@@ -611,14 +788,18 @@ const ReportGenerator = () => {
                         ))}
                         <button
                             className="add-btn"
-                            onClick={() => handleAddItem(setShootings, shootings, { date: '', name: '', link: '' })}
+                            onClick={() => handleAddItem({
+                                setter: setShootings,
+                                currentItems: shootings,
+                                template: {date: '', name: '', link: ''}
+                            })}
                         >
                             Добавить учебные стрельбы
                         </button>
                     </div>
                 )}
 
-                {visibleSections[position].includes('trainings') && (
+                {isSectionVisible({sectionName: 'trainings'}) && (
                     <div className="subsection">
                         <h3>Тренировки</h3>
                         {trainings.map((item, index) => (
@@ -626,24 +807,46 @@ const ReportGenerator = () => {
                                 <input
                                     type="date"
                                     value={item.date}
-                                    onChange={(e) => handleItemChange(setTrainings, trainings, index, 'date', e.target.value)}
+                                    onChange={(e) => handleItemChange({
+                                        setter: setTrainings,
+                                        currentItems: trainings,
+                                        index: index,
+                                        field: 'date',
+                                        value: e.target.value
+                                    })}
                                     placeholder="Дата (дд.мм.гггг)"
                                 />
                                 <input
                                     type="text"
                                     value={item.name}
-                                    onChange={(e) => handleItemChange(setTrainings, trainings, index, 'name', e.target.value)}
+                                    onChange={(e) => handleItemChange({
+                                        setter: setTrainings,
+                                        currentItems: trainings,
+                                        index: index,
+                                        field: 'name',
+                                        value: e.target.value
+                                    })}
                                     placeholder="Название"
                                 />
                                 <input
                                     type="text"
                                     value={item.link}
-                                    onChange={(e) => handleItemChange(setTrainings, trainings, index, 'link', e.target.value)}
+                                    onChange={(e) => handleItemChange({
+                                        setter: setTrainings,
+                                        currentItems: trainings,
+                                        index: index,
+                                        field: 'link',
+                                        value: e.target.value
+                                    })}
                                     placeholder="Ссылка на доказательство"
                                 />
                                 <button
                                     className="remove-btn"
-                                    onClick={() => handleRemoveItem(setTrainings, trainings, index)}
+                                    onClick={() => handleRemoveItem({
+                                        setter: setTrainings,
+                                        currentItems: trainings,
+                                        index: index
+                                    })}
                                 >
                                     Удалить
                                 </button>
@@ -651,14 +854,18 @@ const ReportGenerator = () => {
                         ))}
                         <button
                             className="add-btn"
-                            onClick={() => handleAddItem(setTrainings, trainings, { date: '', name: '', link: '' })}
+                            onClick={() => handleAddItem({
+                                setter: setTrainings,
+                                currentItems: trainings,
+                                template: {date: '', name: '', link: ''}
+                            })}
                         >
                             Добавить тренировку
                         </button>
                     </div>
                 )}
 
-                {visibleSections[position].includes('attendance') && (
+                {isSectionVisible({sectionName: 'attendance'}) && (
                     <div className="subsection">
                         <h3>Посещение мероприятий (или у лидера, или на ГРП)</h3>
                         <div className="input-group">
