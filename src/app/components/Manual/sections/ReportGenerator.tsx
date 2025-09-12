@@ -329,7 +329,7 @@ const ReportGenerator = () => {
     return (
         <>
             <ProtectedSection
-                password="Y7-nBo"
+                password="0-lEne"
                 hint="А вот тебе сюда нельзя.............. Так же здесь моглабы быть ваша реклама)"
                 sessionDuration={9999}
             >
