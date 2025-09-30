@@ -8,7 +8,7 @@ export const navItems: NavItem[] = [
     { id: 'rp-task', title: 'РП задания', icon: '⁉️' },
     { id: 'exam-section', title: 'Правила проведения экзаменов', icon: '📝' },
     { id: 'ammunition-supplies', title: 'Правила поставки боеприпасов', icon: '🚚' },
-    { id: 'parking-spaces', title: 'Парковочные места ВЧ', icon: '🅿️' },
+    //{ id: 'parking-spaces', title: 'Парковочные места ВЧ', icon: '🅿️' },
     { id: 'interview-conscript', title: 'Собеседование (Срочная)', icon: '👤' },
     { id: 'interview-contract', title: 'Собеседование (Контракт)', icon: '👥' },
     { id: 'ministry-of-defense', title: 'Доклады и Тен-коды', icon: '🎤' },

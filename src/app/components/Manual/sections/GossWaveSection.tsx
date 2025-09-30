@@ -53,7 +53,7 @@ const GossWaveSection = () => {
     return (
         <>
             <ProtectedSection
-                password="0-lEne"
+                password="M0o9_25"
                 hint="А вот тебе сюда нельзя.............. Так же здесь моглабы быть ваша реклама)"
                 sessionDuration={9999}
             >
