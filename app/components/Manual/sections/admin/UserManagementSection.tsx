@@ -185,6 +185,8 @@ export default function UserManagementSection() {
     return badges[role as keyof typeof badges] || { label: role, color: "bg-gray-600", icon: Users }
   }
 
+  const canManageUsers = user?.role === "root" || user?.role === "admin"
+
   return (
       <div className="space-y-6">
         {notification && (
@@ -247,10 +249,12 @@ export default function UserManagementSection() {
               <p className="text-sm text-slate-400 mt-1">
                 {user?.role === "root"
                     ? "Вы можете изменять роли и управлять пользователями"
-                    : "Просмотр пользователей (только Root может изменять роли)"}
+                    : user?.role === "admin"
+                        ? "Вы можете управлять пользователями и CC (нельзя трогать админов и root)"
+                        : "Просмотр пользователей"}
               </p>
             </div>
-            {user?.role === "root" && (
+            {canManageUsers && (
                 <button
                     onClick={() => setShowAddModal(true)}
                     disabled={isLoading}
@@ -280,7 +284,7 @@ export default function UserManagementSection() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Игровой ник</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Роль</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Дата создания</th>
-                    {user?.role === "root" && (
+                    {canManageUsers && (
                         <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Действия</th>
                     )}
                   </tr>
@@ -289,6 +293,8 @@ export default function UserManagementSection() {
                   {users.map((u) => {
                     const badge = getRoleBadge(u.role)
                     const Icon = badge.icon
+                    const isEditable = (u.role === "user" || u.role === "cc") &&
+                        (user?.role === "root" || (user?.role === "admin"))
 
                     return (
                         <tr key={u.id} className="hover:bg-slate-800/30 transition-colors">
@@ -314,10 +320,10 @@ export default function UserManagementSection() {
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
                             {new Date(u.created_at).toLocaleDateString("ru-RU")}
                           </td>
-                          {user?.role === "root" && (
+                          {canManageUsers && (
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <div className="flex items-center gap-2">
-                                  {u.role !== "root" ? (
+                                  {u.role !== "root" && isEditable ? (
                                       <>
                                         <select
                                             value={u.role}
@@ -327,7 +333,7 @@ export default function UserManagementSection() {
                                         >
                                           <option value="user">Пользователь</option>
                                           <option value="cc">CC</option>
-                                          <option value="admin">Администратор</option>
+                                          {user?.role === "root" && <option value="admin">Администратор</option>}
                                         </select>
                                         <button
                                             onClick={() => handleDeleteUser(u.id)}
@@ -410,7 +416,7 @@ export default function UserManagementSection() {
                     >
                       <option value="user">Пользователь</option>
                       <option value="cc">CC</option>
-                      <option value="admin">Администратор</option>
+                      {user?.role === "root" && <option value="admin">Администратор</option>}
                     </select>
                   </div>
                   <div className="flex gap-3 pt-2">
