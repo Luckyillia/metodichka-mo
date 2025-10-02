@@ -1,5 +1,5 @@
 import React from 'react';
-import ExamplePhrase from '../ExamplePhrase';
+import ExamplePhrase from '../../ExamplePhrase';
 
 const MinistryOfDefense = () => {
     return (

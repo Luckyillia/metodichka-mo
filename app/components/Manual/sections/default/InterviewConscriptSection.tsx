@@ -1,4 +1,4 @@
-import ExamplePhrase from "../ExamplePhrase"
+import ExamplePhrase from "../../ExamplePhrase"
 
 const InterviewConscriptSection = () => {
   return (

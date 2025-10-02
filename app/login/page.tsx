@@ -110,16 +110,6 @@ export default function LoginPage() {
               </p>
             </div>
           </div>
-
-          <div className="mt-6 p-4 bg-slate-800/50 border border-slate-700 rounded-lg">
-            <p className="text-sm font-medium text-slate-200 mb-2">Демо-аккаунты:</p>
-            <div className="space-y-1 text-xs text-slate-400 font-mono">
-              <div>root / root123 (Root)</div>
-              <div>admin / admin123 (Администратор)</div>
-              <div>cc_user / cc123 (CC аккаунт)</div>
-              <div>user / user123 (Пользователь)</div>
-            </div>
-          </div>
         </div>
       </main>
     </div>

@@ -6,24 +6,24 @@ import { useRouter } from "next/navigation"
 import Header from "@/app/components/Manual/Header"
 import Sidebar from "@/app/components/Manual/Sidebar"
 import { navItems } from "@/data/manualData"
-import OverviewSection from "@/app/components/Manual/sections/OverviewSection"
+import OverviewSection from "@/app/components/Manual/sections/default/OverviewSection"
 import { useAuth } from "@/lib/auth/auth-context"
 import { AlertCircle } from "lucide-react"
 
-const LecturesSection = lazy(() => import("@/app/components/Manual/sections/LecturesSection"))
-const TrainingSection = lazy(() => import("@/app/components/Manual/sections/TrainingSection"))
-const EventsSection = lazy(() => import("@/app/components/Manual/sections/EventsSection"))
-const ExamSection = lazy(() => import("@/app/components/Manual/sections/ExamSection"))
-const AmmunitionSupplies = lazy(() => import("@/app/components/Manual/sections/AmmunitionSupplies"))
-const InterviewConscriptSection = lazy(() => import("@/app/components/Manual/sections/InterviewConscriptSection"))
-const InterviewContractSection = lazy(() => import("@/app/components/Manual/sections/InterviewContractSection"))
-const RPTaskSection = lazy(() => import("@/app/components/Manual/sections/RPTaskSection"))
-import MinistryOfDefense from "@/app/components/Manual/sections/MinistryOfDefense"
-const AnnouncementsSection = lazy(() => import("@/app/components/Manual/sections/AnnouncementsSection"))
-const ForumResponsesSection = lazy(() => import("@/app/components/Manual/sections/ForumResponsesSection"))
-const GossWaveSection = lazy(() => import("@/app/components/Manual/sections/GossWaveSection"))
-const ReportGenerator = lazy(() => import("@/app/components/Manual/sections/ReportGenerator"))
-const UserManagementSection = lazy(() => import("@/app/components/Manual/sections/UserManagementSection"))
+const LecturesSection = lazy(() => import("@/app/components/Manual/sections/default/LecturesSection"))
+const TrainingSection = lazy(() => import("@/app/components/Manual/sections/default/TrainingSection"))
+const EventsSection = lazy(() => import("@/app/components/Manual/sections/default/EventsSection"))
+const ExamSection = lazy(() => import("@/app/components/Manual/sections/default/ExamSection"))
+const AmmunitionSupplies = lazy(() => import("@/app/components/Manual/sections/default/AmmunitionSupplies"))
+const InterviewConscriptSection = lazy(() => import("@/app/components/Manual/sections/default/InterviewConscriptSection"))
+const InterviewContractSection = lazy(() => import("@/app/components/Manual/sections/default/InterviewContractSection"))
+const RPTaskSection = lazy(() => import("@/app/components/Manual/sections/default/RPTaskSection"))
+import MinistryOfDefense from "@/app/components/Manual/sections/default/MinistryOfDefense"
+const AnnouncementsSection = lazy(() => import("@/app/components/Manual/sections/ss/AnnouncementsSection"))
+const ForumResponsesSection = lazy(() => import("@/app/components/Manual/sections/ss/ForumResponsesSection"))
+const GossWaveSection = lazy(() => import("@/app/components/Manual/sections/ss/GossWaveSection"))
+const ReportGenerator = lazy(() => import("@/app/components/Manual/sections/ss/ReportGenerator"))
+const UserManagementSection = lazy(() => import("@/app/components/Manual/sections/admin/UserManagementSection"))
 
 const sectionComponents: Record<string, React.ComponentType> = {
   overview: OverviewSection,
