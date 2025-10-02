@@ -7,17 +7,6 @@ export async function GET() {
   try {
     console.log("[v0] Users API: Fetching users from Supabase")
 
-    // Get current user
-    const { data: { user: currentUser }, error: authError } = await supabase.auth.getUser()
-    if (authError || !currentUser) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    // Check permission
-    if (currentUser.user_metadata?.role !== "root" && currentUser.user_metadata?.role !== "admin") {
-      return NextResponse.json({ error: "Forbidden: Insufficient permissions" }, { status: 403 })
-    }
-
     const { data: users, error } = await supabase
         .from('users')
         .select('id, username, game_nick, role, created_at')
@@ -43,23 +32,6 @@ export async function POST(request: Request) {
     const { username, gameNick, password, role } = body
 
     console.log("[v0] Users API: Creating user:", username, "with game nick:", gameNick)
-
-    // Get current user
-    const { data: { user: currentUser }, error: authError } = await supabase.auth.getUser()
-    if (authError || !currentUser) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    // Check permission
-    const currentRole = currentUser.user_metadata?.role
-    if (currentRole !== "root" && currentRole !== "admin") {
-      return NextResponse.json({ error: "Forbidden: Insufficient permissions" }, { status: 403 })
-    }
-
-    // Admins can't create admins
-    if (currentRole === "admin" && role === "admin") {
-      return NextResponse.json({ error: "Forbidden: Admins cannot create other admins" }, { status: 403 })
-    }
 
     // Validation
     if (!username || !gameNick || !password || !role) {
@@ -139,23 +111,11 @@ export async function POST(request: Request) {
 export async function PATCH(request: Request) {
   try {
     const body = await request.json()
-    const { userId, role: newRole } = body
+    const { userId, role } = body
 
-    console.log("[v0] Users API: Updating user role:", userId, "to", newRole)
+    console.log("[v0] Users API: Updating user role:", userId, "to", role)
 
-    // Get current user
-    const { data: { user: currentUser }, error: authError } = await supabase.auth.getUser()
-    if (authError || !currentUser) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    // Check permission
-    const currentRole = currentUser.user_metadata?.role
-    if (currentRole !== "root" && currentRole !== "admin") {
-      return NextResponse.json({ error: "Forbidden: Insufficient permissions" }, { status: 403 })
-    }
-
-    if (!userId || !newRole) {
+    if (!userId || !role) {
       return NextResponse.json({ error: "ID пользователя и роль обязательны" }, { status: 400 })
     }
 
@@ -175,20 +135,10 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: "Нельзя изменить роль root пользователя" }, { status: 403 })
     }
 
-    // Admins can only manage user/cc, and only set to user/cc
-    if (currentRole === "admin") {
-      if (existingUser.role === "admin" || existingUser.role === "root") {
-        return NextResponse.json({ error: "Forbidden: Admins cannot modify other admins or root" }, { status: 403 })
-      }
-      if (newRole === "admin") {
-        return NextResponse.json({ error: "Forbidden: Admins cannot set admin role" }, { status: 403 })
-      }
-    }
-
     // Update user role
     const { data: updatedUser, error: updateError } = await supabase
         .from('users')
-        .update({ role: newRole })
+        .update({ role })
         .eq('id', userId)
         .select('id, username, game_nick, role, created_at')
         .single()
@@ -214,18 +164,6 @@ export async function DELETE(request: Request) {
 
     console.log("[v0] Users API: Deleting user:", userId)
 
-    // Get current user
-    const { data: { user: currentUser }, error: authError } = await supabase.auth.getUser()
-    if (authError || !currentUser) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    // Check permission
-    const currentRole = currentUser.user_metadata?.role
-    if (currentRole !== "root" && currentRole !== "admin") {
-      return NextResponse.json({ error: "Forbidden: Insufficient permissions" }, { status: 403 })
-    }
-
     if (!userId) {
       return NextResponse.json({ error: "ID пользователя обязателен" }, { status: 400 })
     }
@@ -244,11 +182,6 @@ export async function DELETE(request: Request) {
     // Don't allow deleting root user
     if (existingUser.role === "root") {
       return NextResponse.json({ error: "Нельзя удалить root пользователя" }, { status: 403 })
-    }
-
-    // Admins can't delete admins or root
-    if (currentRole === "admin" && (existingUser.role === "admin" || existingUser.role === "root")) {
-      return NextResponse.json({ error: "Forbidden: Admins cannot delete other admins or root" }, { status: 403 })
     }
 
     // Delete user
