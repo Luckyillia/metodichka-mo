@@ -29,13 +29,20 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { username, gameNick, password, role } = body
+    const { username, gameNick, password, role, currentUserRole } = body
 
     console.log("[v0] Users API: Creating user:", username, "with game nick:", gameNick)
 
     // Validation
     if (!username || !gameNick || !password || !role) {
       return NextResponse.json({ error: "Все поля обязательны для заполнения" }, { status: 400 })
+    }
+
+    // Check permissions
+    if (currentUserRole === "admin" && (role === "admin" || role === "root")) {
+      return NextResponse.json({
+        error: "Администраторы могут создавать только пользователей с ролями 'user' и 'cc'"
+      }, { status: 403 })
     }
 
     if (username.length < 3 || username.length > 50) {
@@ -107,11 +114,120 @@ export async function POST(request: Request) {
   }
 }
 
+// PUT - Update user (username, game_nick, password)
+export async function PUT(request: Request) {
+  try {
+    const body = await request.json()
+    const { userId, username, gameNick, password, currentUserRole } = body
+
+    console.log("[v0] Users API: Updating user:", userId)
+
+    if (!userId || !username || !gameNick) {
+      return NextResponse.json({ error: "ID, имя пользователя и игровой ник обязательны" }, { status: 400 })
+    }
+
+    // Check if user exists and get their current role
+    const { data: existingUser, error: fetchError } = await supabase
+        .from('users')
+        .select('role, username, game_nick')
+        .eq('id', userId)
+        .single()
+
+    if (fetchError || !existingUser) {
+      return NextResponse.json({ error: "Пользователь не найден" }, { status: 404 })
+    }
+
+    // Don't allow editing root user
+    if (existingUser.role === "root") {
+      return NextResponse.json({ error: "Нельзя редактировать root пользователя" }, { status: 403 })
+    }
+
+    // Admin restrictions
+    if (currentUserRole === "admin" && existingUser.role === "admin") {
+      return NextResponse.json({
+        error: "Администраторы не могут редактировать других администраторов"
+      }, { status: 403 })
+    }
+
+    // Validation
+    if (username.length < 3 || username.length > 50) {
+      return NextResponse.json({ error: "Имя пользователя должно быть от 3 до 50 символов" }, { status: 400 })
+    }
+
+    // Validate game nick format
+    const nickValidation = validateGameNick(gameNick)
+    if (!nickValidation.valid) {
+      return NextResponse.json({ error: nickValidation.error }, { status: 400 })
+    }
+
+    // Check if new username already exists (if changed)
+    if (username !== existingUser.username) {
+      const { data: existingUsername } = await supabase
+          .from('users')
+          .select('id')
+          .eq('username', username)
+          .neq('id', userId)
+          .single()
+
+      if (existingUsername) {
+        return NextResponse.json({ error: "Имя пользователя уже существует" }, { status: 400 })
+      }
+    }
+
+    // Check if new game nick already exists (if changed)
+    if (gameNick !== existingUser.game_nick) {
+      const { data: existingGameNick } = await supabase
+          .from('users')
+          .select('id')
+          .eq('game_nick', gameNick)
+          .neq('id', userId)
+          .single()
+
+      if (existingGameNick) {
+        return NextResponse.json({ error: "Игровой ник уже занят" }, { status: 400 })
+      }
+    }
+
+    // Prepare update data
+    const updateData: any = {
+      username,
+      game_nick: gameNick,
+    }
+
+    // Only update password if provided
+    if (password && password.trim() !== "") {
+      if (password.length < 6) {
+        return NextResponse.json({ error: "Пароль должен содержать минимум 6 символов" }, { status: 400 })
+      }
+      updateData.password = await bcrypt.hash(password, 10)
+    }
+
+    // Update user
+    const { data: updatedUser, error: updateError } = await supabase
+        .from('users')
+        .update(updateData)
+        .eq('id', userId)
+        .select('id, username, game_nick, role, created_at')
+        .single()
+
+    if (updateError) {
+      console.error("[v0] Supabase error:", updateError)
+      return NextResponse.json({ error: "Не удалось обновить пользователя" }, { status: 500 })
+    }
+
+    console.log("[v0] Users API: User updated successfully")
+    return NextResponse.json(updatedUser)
+  } catch (error) {
+    console.error("[v0] Users API: Error updating user:", error)
+    return NextResponse.json({ error: "Ошибка при обновлении пользователя" }, { status: 500 })
+  }
+}
+
 // PATCH - Update user role
 export async function PATCH(request: Request) {
   try {
     const body = await request.json()
-    const { userId, role } = body
+    const { userId, role, currentUserRole } = body
 
     console.log("[v0] Users API: Updating user role:", userId, "to", role)
 
@@ -133,6 +249,23 @@ export async function PATCH(request: Request) {
     // Don't allow changing root user's role
     if (existingUser.role === "root") {
       return NextResponse.json({ error: "Нельзя изменить роль root пользователя" }, { status: 403 })
+    }
+
+    // Admin restrictions
+    if (currentUserRole === "admin") {
+      // Admins can't modify other admins
+      if (existingUser.role === "admin") {
+        return NextResponse.json({
+          error: "Администраторы не могут изменять роль других администраторов"
+        }, { status: 403 })
+      }
+
+      // Admins can only set roles to 'user' or 'cc'
+      if (role === "admin" || role === "root") {
+        return NextResponse.json({
+          error: "Администраторы могут назначать только роли 'user' и 'cc'"
+        }, { status: 403 })
+      }
     }
 
     // Update user role
@@ -161,6 +294,7 @@ export async function DELETE(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const userId = searchParams.get("id")
+    const currentUserRole = searchParams.get("currentUserRole")
 
     console.log("[v0] Users API: Deleting user:", userId)
 
@@ -182,6 +316,16 @@ export async function DELETE(request: Request) {
     // Don't allow deleting root user
     if (existingUser.role === "root") {
       return NextResponse.json({ error: "Нельзя удалить root пользователя" }, { status: 403 })
+    }
+
+    // Admin restrictions
+    if (currentUserRole === "admin") {
+      // Admins can't delete other admins
+      if (existingUser.role === "admin") {
+        return NextResponse.json({
+          error: "Администраторы не могут удалять других администраторов"
+        }, { status: 403 })
+      }
     }
 
     // Delete user
