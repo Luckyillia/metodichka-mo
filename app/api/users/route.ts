@@ -271,6 +271,46 @@ export async function PUT(request: Request) {
     }
 
     console.log("[Users API] User updated successfully")
+
+// Логируем обновление пользователя
+    try {
+      const changes = []
+      if (username !== existingUser.username) changes.push("username")
+      if (gameNick !== existingUser.game_nick) changes.push("game_nick")
+      if (password && password.trim() !== "") changes.push("password")
+
+      const changeDetails = changes.map((field) => {
+        if (field === "username") return `логин изменен с "${existingUser.username}" на "${username}"`
+        if (field === "game_nick") return `игровой ник изменен с "${existingUser.game_nick}" на "${gameNick}"`
+        if (field === "password") return "пароль изменен"
+        return field
+      }).join(", ")
+
+      await supabase.from("action_logs").insert([
+        {
+          user_id: currentUser.id,
+          game_nick: currentUser.game_nick,
+          action: `Обновлена информация пользователя: ${updatedUser.game_nick}`,
+          action_type: "update",
+          target_type: "user",
+          target_id: userId,
+          target_name: updatedUser.game_nick,
+          details: `Изменено: ${changeDetails}`,
+          metadata: {
+            changes,
+            old_username: existingUser.username,
+            new_username: username,
+            old_game_nick: existingUser.game_nick,
+            new_game_nick: gameNick,
+            password_changed: changes.includes("password"),
+            updated_by: currentUser.game_nick,
+          },
+        },
+      ])
+    } catch (logError) {
+      console.error("[Users API] Failed to log user update:", logError)
+    }
+
     return NextResponse.json(updatedUser)
   } catch (error) {
     console.error("[Users API] Error updating user:", error)
@@ -344,6 +384,31 @@ export async function PATCH(request: Request) {
     }
 
     console.log("[Users API] User role updated successfully")
+
+// Логируем изменение роли
+    try {
+      await supabase.from("action_logs").insert([
+        {
+          user_id: currentUser.id,
+          game_nick: currentUser.game_nick,
+          action: `Изменена роль пользователя: ${updatedUser.game_nick}`,
+          action_type: "role_change",
+          target_type: "user",
+          target_id: userId,
+          target_name: updatedUser.game_nick,
+          details: `Роль изменена с "${existingUser.role}" на "${role}"`,
+          metadata: {
+            old_role: existingUser.role,
+            new_role: role,
+            changed_by: currentUser.game_nick,
+            username: updatedUser.username,
+          },
+        },
+      ])
+    } catch (logError) {
+      console.error("[Users API] Failed to log role change:", logError)
+    }
+
     return NextResponse.json(updatedUser)
   } catch (error) {
     console.error("[Users API] Error updating user:", error)

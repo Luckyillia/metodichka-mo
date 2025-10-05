@@ -24,6 +24,32 @@ export async function POST(request: Request) {
 
     if (fetchError || !user) {
       console.log("[Login API] User not found:", username)
+
+      // Логируем неудачную попытку входа (пользователь не найден)
+      try {
+        const ip_address = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip")
+        const user_agent = request.headers.get("user-agent")
+
+        await supabase.from("action_logs").insert([
+          {
+            user_id: null,
+            game_nick: "Unknown",
+            action: `Неудачная попытка входа: пользователь "${username}" не найден`,
+            action_type: "login",
+            target_type: "system",
+            details: `Попытка входа с несуществующим именем пользователя`,
+            metadata: {
+              username,
+              reason: "user_not_found",
+            },
+            ip_address,
+            user_agent,
+          },
+        ])
+      } catch (logError) {
+        console.error("[Login API] Failed to log failed attempt:", logError)
+      }
+
       return NextResponse.json(
           { error: "Неверное имя пользователя или пароль" },
           { status: 401 }
@@ -35,6 +61,32 @@ export async function POST(request: Request) {
 
     if (!isPasswordValid) {
       console.log("[Login API] Invalid password for user:", username)
+
+      // Логируем неудачную попытку входа (неверный пароль)
+      try {
+        const ip_address = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip")
+        const user_agent = request.headers.get("user-agent")
+
+        await supabase.from("action_logs").insert([
+          {
+            user_id: user.id,
+            game_nick: user.game_nick,
+            action: `Неудачная попытка входа: неверный пароль`,
+            action_type: "login",
+            target_type: "system",
+            details: `Введен неверный пароль для пользователя "${username}"`,
+            metadata: {
+              username,
+              reason: "invalid_password",
+            },
+            ip_address,
+            user_agent,
+          },
+        ])
+      } catch (logError) {
+        console.error("[Login API] Failed to log failed attempt:", logError)
+      }
+
       return NextResponse.json(
           { error: "Неверное имя пользователя или пароль" },
           { status: 401 }

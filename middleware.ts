@@ -36,7 +36,7 @@ function verifyAuthToken(token: string): any {
     }
 }
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
     const path = request.nextUrl.pathname
 
     // Защищаем все API маршруты кроме login
@@ -57,16 +57,80 @@ export function middleware(request: NextRequest) {
         }
 
         // Проверяем права для управления пользователями
+        // Проверяем права для управления пользователями
         if (path.startsWith('/api/users')) {
             // Только root и admin могут работать с пользователями
             if (user.role !== 'root' && user.role !== 'admin') {
                 console.log('[Middleware] Insufficient permissions for users API')
+
+                // Логируем попытку несанкционированного доступа
+                try {
+                    const ip_address = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip")
+                    const user_agent = request.headers.get("user-agent")
+
+                    await fetch(`${request.nextUrl.origin}/api/action-logs-internal`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            user_id: user.id,
+                            game_nick: user.game_nick,
+                            action: `Попытка доступа к API управления пользователями`,
+                            action_type: 'other',
+                            target_type: 'system',
+                            details: `Отказано в доступе к ${path} (роль: ${user.role})`,
+                            metadata: {
+                                path,
+                                method: request.method,
+                                role: user.role,
+                                reason: 'insufficient_permissions',
+                            },
+                            ip_address,
+                            user_agent,
+                        })
+                    })
+                } catch (logError) {
+                    console.error('[Middleware] Failed to log access denied:', logError)
+                }
+
                 return NextResponse.json({ error: 'Недостаточно прав' }, { status: 403 })
             }
 
             // Для операций изменения/удаления проверяем дополнительно
             if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method)) {
                 if (user.role !== 'root' && user.role !== 'admin') {
+                    // Логируем попытку изменения данных без прав
+                    try {
+                        const ip_address = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip")
+                        const user_agent = request.headers.get("user-agent")
+
+                        await fetch(`${request.nextUrl.origin}/api/action-logs-internal`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                user_id: user.id,
+                                game_nick: user.game_nick,
+                                action: `Попытка ${request.method} операции без прав`,
+                                action_type: 'other',
+                                target_type: 'system',
+                                details: `Отказано в ${request.method} запросе к ${path} (роль: ${user.role})`,
+                                metadata: {
+                                    path,
+                                    method: request.method,
+                                    role: user.role,
+                                    reason: 'insufficient_permissions_for_operation',
+                                },
+                                ip_address,
+                                user_agent,
+                            })
+                        })
+                    } catch (logError) {
+                        console.error('[Middleware] Failed to log operation denied:', logError)
+                    }
+
                     return NextResponse.json({ error: 'Недостаточно прав' }, { status: 403 })
                 }
             }
@@ -77,6 +141,38 @@ export function middleware(request: NextRequest) {
             // Только root и admin могут просматривать логи
             if (user.role !== 'root' && user.role !== 'admin') {
                 console.log('[Middleware] Insufficient permissions for action-logs API')
+
+                // Логируем попытку доступа к логам
+                try {
+                    const ip_address = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip")
+                    const user_agent = request.headers.get("user-agent")
+
+                    await fetch(`${request.nextUrl.origin}/api/action-logs-internal`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            user_id: user.id,
+                            game_nick: user.game_nick,
+                            action: `Попытка доступа к журналу действий`,
+                            action_type: 'other',
+                            target_type: 'system',
+                            details: `Отказано в доступе к логам (роль: ${user.role})`,
+                            metadata: {
+                                path,
+                                method: request.method,
+                                role: user.role,
+                                reason: 'insufficient_permissions_logs',
+                            },
+                            ip_address,
+                            user_agent,
+                        })
+                    })
+                } catch (logError) {
+                    console.error('[Middleware] Failed to log logs access denied:', logError)
+                }
+
                 return NextResponse.json({ error: 'Недостаточно прав' }, { status: 403 })
             }
         }
