@@ -1,44 +1,23 @@
 import { NextResponse } from "next/server"
 import { supabase } from "@/lib/supabase"
-import CryptoJS from "crypto-js"
 
-const ENCRYPTION_KEY = process.env.MZ_ENCRYPTION_KEY || "fallback-key-change-in-production"
+// Вспомогательная функция для получения данных пользователя из заголовков middleware
+function getUserFromHeaders(request: Request) {
+    const userId = request.headers.get("x-user-id")
+    const role = request.headers.get("x-user-role")
+    const username = request.headers.get("x-user-username")
+    const gameNick = request.headers.get("x-user-game-nick")
 
-// Вспомогательная функция для получения данных пользователя из заголовков
-function getUserFromToken(request: Request) {
-    const authHeader = request.headers.get("Authorization")
-
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    if (!userId || !role || !username || !gameNick) {
+        console.log('[Action Logs API] Missing user headers:', { userId, role, username, gameNick })
         return null
     }
 
-    const token = authHeader.substring(7)
-
-    try {
-        const decoded = JSON.parse(Buffer.from(token, "base64").toString())
-
-        const signatureData = `${decoded.id}:${decoded.username}:${decoded.role}:${decoded.game_nick}`
-        const expectedSignature = CryptoJS.HmacSHA256(signatureData, ENCRYPTION_KEY).toString()
-
-        if (decoded.signature !== expectedSignature) {
-            return null
-        }
-
-        const SESSION_DURATION = 7 * 24 * 60 * 60 * 1000
-        const loginTimestamp = decoded.loginTimestamp || decoded.timestamp
-        if (Date.now() - loginTimestamp > SESSION_DURATION) {
-            return null
-        }
-
-        return {
-            id: decoded.id,
-            role: decoded.role,
-            username: decoded.username,
-            game_nick: decoded.game_nick,
-        }
-    } catch (error) {
-        console.error("[Action Logs API] Error decoding token:", error)
-        return null
+    return {
+        id: userId,
+        role: role as "root" | "admin" | "cc" | "user",
+        username: username,
+        game_nick: gameNick,
     }
 }
 
@@ -46,12 +25,11 @@ function getUserFromToken(request: Request) {
 export async function GET(request: Request) {
     try {
         console.log("[Action Logs API] GET request received")
-        console.log("[Action Logs API] Headers:", Object.fromEntries(request.headers.entries()))
 
-        const currentUser = getUserFromToken(request)
+        const currentUser = getUserFromHeaders(request)
 
         if (!currentUser) {
-            console.log("[Action Logs API] No user found in token")
+            console.log("[Action Logs API] No user found in headers")
             return NextResponse.json({ error: "Не авторизован" }, { status: 401 })
         }
 
@@ -113,7 +91,7 @@ export async function GET(request: Request) {
 // POST - Создать запись в логах
 export async function POST(request: Request) {
     try {
-        const currentUser = getUserFromToken(request)
+        const currentUser = getUserFromHeaders(request)
 
         if (!currentUser) {
             return NextResponse.json({ error: "Не авторизован" }, { status: 401 })

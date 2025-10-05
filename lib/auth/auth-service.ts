@@ -28,10 +28,6 @@ export class AuthService {
       this.saveEncryptedUser(authToken)
       console.log('[AuthService] Token saved to localStorage')
 
-      if (user.role === "admin" || user.role === "root") {
-        await this.logAction(user.id, user.game_nick, "Вход в систему")
-      }
-
       return user
     } catch (error) {
       console.error("[AuthService] Login error:", error)

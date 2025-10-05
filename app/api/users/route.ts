@@ -1,55 +1,31 @@
 import { NextResponse } from "next/server"
 import { supabase, validateGameNick } from "@/lib/supabase"
 import bcrypt from "bcryptjs"
-import CryptoJS from "crypto-js"
-import { ENCRYPTION_KEY, SESSION_DURATION } from "@/lib/auth/constants"
 
-// Вспомогательная функция для получения данных пользователя из заголовков
-function getUserFromToken(request: Request) {
-  const authHeader = request.headers.get("Authorization")
+// Вспомогательная функция для получения данных пользователя из заголовков middleware
+function getUserFromHeaders(request: Request) {
+  const userId = request.headers.get("x-user-id")
+  const role = request.headers.get("x-user-role")
+  const username = request.headers.get("x-user-username")
+  const gameNick = request.headers.get("x-user-game-nick")
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+  if (!userId || !role || !username || !gameNick) {
+    console.log('[Users API] Missing user headers:', { userId, role, username, gameNick })
     return null
   }
 
-  const token = authHeader.substring(7) // Remove 'Bearer ' prefix
-
-  try {
-    // Verify token signature
-    const decoded = JSON.parse(Buffer.from(token, "base64").toString())
-
-    // Verify signature
-    const signatureData = `${decoded.id}:${decoded.username}:${decoded.role}:${decoded.game_nick}`
-    const expectedSignature = CryptoJS.HmacSHA256(signatureData, ENCRYPTION_KEY).toString()
-
-    if (decoded.signature !== expectedSignature) {
-      console.error("[Users API] Invalid token signature")
-      return null
-    }
-
-    // Check 7-day session expiration
-    const loginTimestamp = decoded.loginTimestamp || decoded.timestamp
-    if (Date.now() - loginTimestamp > SESSION_DURATION) {
-      console.error("[Users API] Token expired")
-      return null
-    }
-
-    return {
-      id: decoded.id,
-      role: decoded.role,
-      username: decoded.username,
-      game_nick: decoded.game_nick,
-    }
-  } catch (error) {
-    console.error("[Users API] Error decoding token:", error)
-    return null
+  return {
+    id: userId,
+    role: role as "root" | "admin" | "cc" | "user",
+    username: username,
+    game_nick: gameNick,
   }
 }
 
 // GET - Fetch all users
 export async function GET(request: Request) {
   try {
-    const currentUser = getUserFromToken(request)
+    const currentUser = getUserFromHeaders(request)
 
     if (!currentUser) {
       return NextResponse.json({ error: "Не авторизован" }, { status: 401 })
@@ -78,7 +54,7 @@ export async function GET(request: Request) {
 // POST - Create new user
 export async function POST(request: Request) {
   try {
-    const currentUser = getUserFromToken(request)
+    const currentUser = getUserFromHeaders(request)
 
     if (!currentUser) {
       return NextResponse.json({ error: "Не авторизован" }, { status: 401 })
@@ -193,7 +169,7 @@ export async function POST(request: Request) {
 // PUT - Update user
 export async function PUT(request: Request) {
   try {
-    const currentUser = getUserFromToken(request)
+    const currentUser = getUserFromHeaders(request)
 
     if (!currentUser) {
       return NextResponse.json({ error: "Не авторизован" }, { status: 401 })
@@ -305,7 +281,7 @@ export async function PUT(request: Request) {
 // PATCH - Update user role
 export async function PATCH(request: Request) {
   try {
-    const currentUser = getUserFromToken(request)
+    const currentUser = getUserFromHeaders(request)
 
     if (!currentUser) {
       return NextResponse.json({ error: "Не авторизован" }, { status: 401 })
@@ -378,7 +354,7 @@ export async function PATCH(request: Request) {
 // DELETE - Delete user
 export async function DELETE(request: Request) {
   try {
-    const currentUser = getUserFromToken(request)
+    const currentUser = getUserFromHeaders(request)
 
     if (!currentUser) {
       return NextResponse.json({ error: "Не авторизован" }, { status: 401 })
