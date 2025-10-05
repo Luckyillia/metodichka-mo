@@ -3,7 +3,20 @@
 import type React from "react"
 import { useEffect, useState } from "react"
 import { useAuth } from "@/lib/auth/auth-context"
-import { Shield, Users, Crown, AlertCircle, CheckCircle, UserCog, UserPlus, Trash2, Loader2, Gamepad2, Edit } from "lucide-react"
+import { AuthService } from "@/lib/auth/auth-service"
+import {
+  Shield,
+  Users,
+  Crown,
+  AlertCircle,
+  CheckCircle,
+  UserCog,
+  UserPlus,
+  Trash2,
+  Loader2,
+  Gamepad2,
+  Edit,
+} from "lucide-react"
 
 type User = {
   id: string
@@ -41,10 +54,9 @@ export default function UserManagementSection() {
   const loadUsers = async () => {
     setIsLoading(true)
     try {
-      const response = await fetch("/api/users", {
+      const response = await AuthService.fetchWithAuth("/api/users", {
         method: "GET",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
       })
 
       if (!response.ok) {
@@ -132,10 +144,9 @@ export default function UserManagementSection() {
     setIsLoading(true)
 
     try {
-      const response = await fetch("/api/users", {
+      const response = await AuthService.fetchWithAuth("/api/users", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           ...newUser,
           currentUserRole: user?.role,
@@ -145,7 +156,7 @@ export default function UserManagementSection() {
       const responseData = await response.json()
 
       if (response.ok) {
-        await new Promise(resolve => setTimeout(resolve, 500))
+        await new Promise((resolve) => setTimeout(resolve, 500))
         await loadUsers()
         setShowAddModal(false)
         setNewUser({ username: "", gameNick: "", password: "", role: "user" })
@@ -183,10 +194,9 @@ export default function UserManagementSection() {
     setIsLoading(true)
 
     try {
-      const response = await fetch("/api/users", {
+      const response = await AuthService.fetchWithAuth("/api/users", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           userId: editUser.id,
           username: editUser.username,
@@ -207,7 +217,6 @@ export default function UserManagementSection() {
         showNotification("error", responseData.error || "Не удалось обновить пользователя")
       }
     } catch (error) {
-      console.error("Error updating user:", error)
       showNotification("error", "Ошибка при обновлении пользователя")
     } finally {
       setIsLoading(false)
@@ -233,10 +242,9 @@ export default function UserManagementSection() {
 
     setIsLoading(true)
     try {
-      const response = await fetch("/api/users", {
+      const response = await AuthService.fetchWithAuth("/api/users", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           userId,
           role: newRole,
@@ -270,9 +278,8 @@ export default function UserManagementSection() {
 
     setIsLoading(true)
     try {
-      const response = await fetch(`/api/users?id=${userId}&currentUserRole=${user?.role}`, {
+      const response = await AuthService.fetchWithAuth(`/api/users?id=${userId}&currentUserRole=${user?.role}`, {
         method: "DELETE",
-        credentials: "include",
       })
 
       if (response.ok) {
@@ -394,6 +401,9 @@ export default function UserManagementSection() {
                 <table className="w-full">
                   <thead className="bg-slate-800/50">
                   <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Имя пользователя</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Игровой ник</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Роль</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Дата создания</th>
                     {(user?.role === "root" || user?.role === "admin") && (
                         <th className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase">Действия</th>
@@ -443,7 +453,7 @@ export default function UserManagementSection() {
                                             disabled={isLoading}
                                             className="px-3 py-1.5 bg-slate-900 border border-slate-600 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                                         >
-                                          {availableRoles.map(role => (
+                                          {availableRoles.map((role) => (
                                               <option key={role.value} value={role.value}>
                                                 {role.label}
                                               </option>
@@ -541,7 +551,7 @@ export default function UserManagementSection() {
                         className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                         disabled={isLoading}
                     >
-                      {availableRoles.map(role => (
+                      {availableRoles.map((role) => (
                           <option key={role.value} value={role.value}>
                             {role.label}
                           </option>
@@ -673,13 +683,15 @@ export default function UserManagementSection() {
                   <strong>Root:</strong> Полный доступ ко всем функциям, может назначать любые роли (не редактируется)
                 </li>
                 <li>
-                  <strong>Администратор:</strong> Может управлять пользователями с ролями User и CC, не может изменять других администраторов
+                  <strong>Администратор:</strong> Может управлять пользователями с ролями User и CC, не может изменять
+                  других администраторов
                 </li>
                 <li>
                   <strong>CC:</strong> Доступ к расширенным разделам (Гос Волна, Шаблоны, Форум, Генератор отчетов)
                 </li>
                 <li>
-                  <strong>Пользователь:</strong> Доступ к базовым разделам (Содержание, Лекции, Тренировки, Мероприятия, РП задания, Собеседования, Доклады)
+                  <strong>Пользователь:</strong> Доступ к базовым разделам (Содержание, Лекции, Тренировки, Мероприятия,
+                  РП задания, Собеседования, Доклады)
                 </li>
               </ul>
             </div>
@@ -695,10 +707,18 @@ export default function UserManagementSection() {
                 Игровой ник используется вместо email и должен соответствовать формату вашего ника в игре.
               </p>
               <div className="space-y-1 text-sm text-green-200">
-                <div>✅ Правильно: <code className="bg-green-900/30 px-2 py-0.5 rounded">Polter_Sokirovskiy</code></div>
-                <div>✅ Правильно: <code className="bg-green-900/30 px-2 py-0.5 rounded">John_Smith</code></div>
-                <div>❌ Неправильно: <code className="bg-red-900/30 px-2 py-0.5 rounded">polter sokirovskiy</code></div>
-                <div>❌ Неправильно: <code className="bg-red-900/30 px-2 py-0.5 rounded">Polter-Sokirovskiy</code></div>
+                <div>
+                  ✅ Правильно: <code className="bg-green-900/30 px-2 py-0.5 rounded">Polter_Sokirovskiy</code>
+                </div>
+                <div>
+                  ✅ Правильно: <code className="bg-green-900/30 px-2 py-0.5 rounded">John_Smith</code>
+                </div>
+                <div>
+                  ❌ Неправильно: <code className="bg-red-900/30 px-2 py-0.5 rounded">polter sokirovskiy</code>
+                </div>
+                <div>
+                  ❌ Неправильно: <code className="bg-red-900/30 px-2 py-0.5 rounded">Polter-Sokirovskiy</code>
+                </div>
               </div>
             </div>
           </div>

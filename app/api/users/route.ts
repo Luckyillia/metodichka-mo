@@ -1,26 +1,78 @@
 import { NextResponse } from "next/server"
 import { supabase, validateGameNick } from "@/lib/supabase"
 import bcrypt from "bcryptjs"
+import CryptoJS from "crypto-js"
+
+const ENCRYPTION_KEY = process.env.MZ_ENCRYPTION_KEY || "fallback-key-change-in-production"
+
+// Вспомогательная функция для получения данных пользователя из заголовков
+function getUserFromToken(request: Request) {
+  const authHeader = request.headers.get("Authorization")
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return null
+  }
+
+  const token = authHeader.substring(7) // Remove 'Bearer ' prefix
+
+  try {
+    // Verify token signature
+    const decoded = JSON.parse(Buffer.from(token, "base64").toString())
+
+    // Verify signature
+    const signatureData = `${decoded.id}:${decoded.username}:${decoded.role}:${decoded.game_nick}`
+    const expectedSignature = CryptoJS.HmacSHA256(signatureData, ENCRYPTION_KEY).toString()
+
+    if (decoded.signature !== expectedSignature) {
+      console.error("[Users API] Invalid token signature")
+      return null
+    }
+
+    // Check 7-day session expiration
+    const SESSION_DURATION = 7 * 24 * 60 * 60 * 1000
+    const loginTimestamp = decoded.loginTimestamp || decoded.timestamp
+    if (Date.now() - loginTimestamp > SESSION_DURATION) {
+      console.error("[Users API] Token expired")
+      return null
+    }
+
+    return {
+      id: decoded.id,
+      role: decoded.role,
+      username: decoded.username,
+      game_nick: decoded.game_nick,
+    }
+  } catch (error) {
+    console.error("[Users API] Error decoding token:", error)
+    return null
+  }
+}
 
 // GET - Fetch all users
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    console.log("[v0] Users API: Fetching users from Supabase")
+    const currentUser = getUserFromToken(request)
+
+    if (!currentUser) {
+      return NextResponse.json({ error: "Не авторизован" }, { status: 401 })
+    }
+
+    console.log("[Users API] Fetching users, requested by:", currentUser.username)
 
     const { data: users, error } = await supabase
-        .from('users')
-        .select('id, username, game_nick, role, created_at')
-        .order('created_at', { ascending: false })
+        .from("users")
+        .select("id, username, game_nick, role, created_at")
+        .order("created_at", { ascending: false })
 
     if (error) {
-      console.error("[v0] Supabase error:", error)
+      console.error("[Users API] Supabase error:", error)
       return NextResponse.json({ error: "Failed to fetch users" }, { status: 500 })
     }
 
-    console.log("[v0] Users API: Fetched users, count:", users?.length || 0)
+    console.log("[Users API] Fetched users, count:", users?.length || 0)
     return NextResponse.json(users || [])
   } catch (error) {
-    console.error("[v0] Users API: Error fetching users:", error)
+    console.error("[Users API] Error fetching users:", error)
     return NextResponse.json({ error: "Failed to fetch users" }, { status: 500 })
   }
 }
@@ -28,21 +80,30 @@ export async function GET() {
 // POST - Create new user
 export async function POST(request: Request) {
   try {
-    const body = await request.json()
-    const { username, gameNick, password, role, currentUserRole } = body
+    const currentUser = getUserFromToken(request)
 
-    console.log("[v0] Users API: Creating user:", username, "with game nick:", gameNick)
+    if (!currentUser) {
+      return NextResponse.json({ error: "Не авторизован" }, { status: 401 })
+    }
+
+    const body = await request.json()
+    const { username, gameNick, password, role } = body
+
+    console.log("[Users API] Creating user:", username, "by:", currentUser.username)
 
     // Validation
     if (!username || !gameNick || !password || !role) {
       return NextResponse.json({ error: "Все поля обязательны для заполнения" }, { status: 400 })
     }
 
-    // Check permissions
-    if (currentUserRole === "admin" && (role === "admin" || role === "root")) {
-      return NextResponse.json({
-        error: "Администраторы могут создавать только пользователей с ролями 'user' и 'cc'"
-      }, { status: 403 })
+    // Проверка прав на основе СЕРВЕРНОЙ роли
+    if (currentUser.role === "admin" && (role === "admin" || role === "root")) {
+      return NextResponse.json(
+          {
+            error: "Администраторы могут создавать только пользователей с ролями 'user' и 'cc'",
+          },
+          { status: 403 },
+      )
     }
 
     if (username.length < 3 || username.length > 50) {
@@ -53,120 +114,118 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Пароль должен содержать минимум 6 символов" }, { status: 400 })
     }
 
-    // Validate game nick format
     const nickValidation = validateGameNick(gameNick)
     if (!nickValidation.valid) {
       return NextResponse.json({ error: nickValidation.error }, { status: 400 })
     }
 
-    // Check if username already exists
-    const { data: existingUsername } = await supabase
-        .from('users')
-        .select('id')
-        .eq('username', username)
-        .single()
+    // Check username
+    const { data: existingUsername } = await supabase.from("users").select("id").eq("username", username).single()
 
     if (existingUsername) {
       return NextResponse.json({ error: "Имя пользователя уже существует" }, { status: 400 })
     }
 
-    // Check if game nick already exists
-    const { data: existingGameNick } = await supabase
-        .from('users')
-        .select('id')
-        .eq('game_nick', gameNick)
-        .single()
+    // Check game nick
+    const { data: existingGameNick } = await supabase.from("users").select("id").eq("game_nick", gameNick).single()
 
     if (existingGameNick) {
       return NextResponse.json({ error: "Игровой ник уже занят" }, { status: 400 })
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    // Create new user in Supabase
     const { data: newUser, error } = await supabase
-        .from('users')
+        .from("users")
         .insert([
           {
             username,
             game_nick: gameNick,
             password: hashedPassword,
             role,
-          }
+          },
         ])
-        .select('id, username, game_nick, role, created_at')
+        .select("id, username, game_nick, role, created_at")
         .single()
 
     if (error) {
-      console.error("[v0] Supabase error:", error)
-      return NextResponse.json({
-        error: "Не удалось создать пользователя",
-        details: error.message
-      }, { status: 500 })
+      console.error("[Users API] Supabase error:", error)
+      return NextResponse.json(
+          {
+            error: "Не удалось создать пользователя",
+            details: error.message,
+          },
+          { status: 500 },
+      )
     }
 
-    console.log("[v0] Users API: User created successfully:", username)
+    console.log("[Users API] User created successfully:", username)
     return NextResponse.json(newUser, { status: 201 })
   } catch (error) {
-    console.error("[v0] Users API: Error creating user:", error)
+    console.error("[Users API] Error creating user:", error)
     return NextResponse.json({ error: "Ошибка при создании пользователя" }, { status: 500 })
   }
 }
 
-// PUT - Update user (username, game_nick, password)
+// PUT - Update user
 export async function PUT(request: Request) {
   try {
-    const body = await request.json()
-    const { userId, username, gameNick, password, currentUserRole } = body
+    const currentUser = getUserFromToken(request)
 
-    console.log("[v0] Users API: Updating user:", userId)
+    if (!currentUser) {
+      return NextResponse.json({ error: "Не авторизован" }, { status: 401 })
+    }
+
+    const body = await request.json()
+    const { userId, username, gameNick, password } = body
+
+    console.log("[Users API] Updating user:", userId, "by:", currentUser.username)
 
     if (!userId || !username || !gameNick) {
       return NextResponse.json({ error: "ID, имя пользователя и игровой ник обязательны" }, { status: 400 })
     }
 
-    // Check if user exists and get their current role
     const { data: existingUser, error: fetchError } = await supabase
-        .from('users')
-        .select('role, username, game_nick')
-        .eq('id', userId)
+        .from("users")
+        .select("role, username, game_nick")
+        .eq("id", userId)
         .single()
 
     if (fetchError || !existingUser) {
       return NextResponse.json({ error: "Пользователь не найден" }, { status: 404 })
     }
 
-    // Don't allow editing root user
+    // Защита root пользователя
     if (existingUser.role === "root") {
       return NextResponse.json({ error: "Нельзя редактировать root пользователя" }, { status: 403 })
     }
 
-    // Admin restrictions
-    if (currentUserRole === "admin" && existingUser.role === "admin") {
-      return NextResponse.json({
-        error: "Администраторы не могут редактировать других администраторов"
-      }, { status: 403 })
+    // Admin не может редактировать других админов
+    if (currentUser.role === "admin" && existingUser.role === "admin") {
+      return NextResponse.json(
+          {
+            error: "Администраторы не могут редактировать других администраторов",
+          },
+          { status: 403 },
+      )
     }
 
-    // Validation
     if (username.length < 3 || username.length > 50) {
       return NextResponse.json({ error: "Имя пользователя должно быть от 3 до 50 символов" }, { status: 400 })
     }
 
-    // Validate game nick format
     const nickValidation = validateGameNick(gameNick)
     if (!nickValidation.valid) {
       return NextResponse.json({ error: nickValidation.error }, { status: 400 })
     }
 
-    // Check if new username already exists (if changed)
+    // Check username uniqueness
     if (username !== existingUser.username) {
       const { data: existingUsername } = await supabase
-          .from('users')
-          .select('id')
-          .eq('username', username)
-          .neq('id', userId)
+          .from("users")
+          .select("id")
+          .eq("username", username)
+          .neq("id", userId)
           .single()
 
       if (existingUsername) {
@@ -174,13 +233,13 @@ export async function PUT(request: Request) {
       }
     }
 
-    // Check if new game nick already exists (if changed)
+    // Check game nick uniqueness
     if (gameNick !== existingUser.game_nick) {
       const { data: existingGameNick } = await supabase
-          .from('users')
-          .select('id')
-          .eq('game_nick', gameNick)
-          .neq('id', userId)
+          .from("users")
+          .select("id")
+          .eq("game_nick", gameNick)
+          .neq("id", userId)
           .single()
 
       if (existingGameNick) {
@@ -188,13 +247,11 @@ export async function PUT(request: Request) {
       }
     }
 
-    // Prepare update data
     const updateData: any = {
       username,
       game_nick: gameNick,
     }
 
-    // Only update password if provided
     if (password && password.trim() !== "") {
       if (password.length < 6) {
         return NextResponse.json({ error: "Пароль должен содержать минимум 6 символов" }, { status: 400 })
@@ -202,23 +259,22 @@ export async function PUT(request: Request) {
       updateData.password = await bcrypt.hash(password, 10)
     }
 
-    // Update user
     const { data: updatedUser, error: updateError } = await supabase
-        .from('users')
+        .from("users")
         .update(updateData)
-        .eq('id', userId)
-        .select('id, username, game_nick, role, created_at')
+        .eq("id", userId)
+        .select("id, username, game_nick, role, created_at")
         .single()
 
     if (updateError) {
-      console.error("[v0] Supabase error:", updateError)
+      console.error("[Users API] Supabase error:", updateError)
       return NextResponse.json({ error: "Не удалось обновить пользователя" }, { status: 500 })
     }
 
-    console.log("[v0] Users API: User updated successfully")
+    console.log("[Users API] User updated successfully")
     return NextResponse.json(updatedUser)
   } catch (error) {
-    console.error("[v0] Users API: Error updating user:", error)
+    console.error("[Users API] Error updating user:", error)
     return NextResponse.json({ error: "Ошибка при обновлении пользователя" }, { status: 500 })
   }
 }
@@ -226,65 +282,72 @@ export async function PUT(request: Request) {
 // PATCH - Update user role
 export async function PATCH(request: Request) {
   try {
-    const body = await request.json()
-    const { userId, role, currentUserRole } = body
+    const currentUser = getUserFromToken(request)
 
-    console.log("[v0] Users API: Updating user role:", userId, "to", role)
+    if (!currentUser) {
+      return NextResponse.json({ error: "Не авторизован" }, { status: 401 })
+    }
+
+    const body = await request.json()
+    const { userId, role } = body
+
+    console.log("[Users API] Updating user role:", userId, "to", role, "by:", currentUser.username)
 
     if (!userId || !role) {
       return NextResponse.json({ error: "ID пользователя и роль обязательны" }, { status: 400 })
     }
 
-    // Check if user exists and get their current role
     const { data: existingUser, error: fetchError } = await supabase
-        .from('users')
-        .select('role')
-        .eq('id', userId)
+        .from("users")
+        .select("role")
+        .eq("id", userId)
         .single()
 
     if (fetchError || !existingUser) {
       return NextResponse.json({ error: "Пользователь не найден" }, { status: 404 })
     }
 
-    // Don't allow changing root user's role
     if (existingUser.role === "root") {
       return NextResponse.json({ error: "Нельзя изменить роль root пользователя" }, { status: 403 })
     }
 
     // Admin restrictions
-    if (currentUserRole === "admin") {
-      // Admins can't modify other admins
+    if (currentUser.role === "admin") {
       if (existingUser.role === "admin") {
-        return NextResponse.json({
-          error: "Администраторы не могут изменять роль других администраторов"
-        }, { status: 403 })
+        return NextResponse.json(
+            {
+              error: "Администраторы не могут изменять роль других администраторов",
+            },
+            { status: 403 },
+        )
       }
 
-      // Admins can only set roles to 'user' or 'cc'
       if (role === "admin" || role === "root") {
-        return NextResponse.json({
-          error: "Администраторы могут назначать только роли 'user' и 'cc'"
-        }, { status: 403 })
+        return NextResponse.json(
+            {
+              error: "Администраторы могут назначать только роли 'user' и 'cc'",
+            },
+            { status: 403 },
+        )
       }
     }
 
-    // Update user role
     const { data: updatedUser, error: updateError } = await supabase
-        .from('users')
+        .from("users")
         .update({ role })
-        .eq('id', userId)
-        .select('id, username, game_nick, role, created_at')
+        .eq("id", userId)
+        .select("id, username, game_nick, role, created_at")
         .single()
 
     if (updateError) {
-      console.error("[v0] Supabase error:", updateError)
+      console.error("[Users API] Supabase error:", updateError)
       return NextResponse.json({ error: "Не удалось обновить роль" }, { status: 500 })
     }
 
-    console.log("[v0] Users API: User role updated successfully")
+    console.log("[Users API] User role updated successfully")
     return NextResponse.json(updatedUser)
   } catch (error) {
-    console.error("[v0] Users API: Error updating user:", error)
+    console.error("[Users API] Error updating user:", error)
     return NextResponse.json({ error: "Ошибка при обновлении роли" }, { status: 500 })
   }
 }
@@ -292,57 +355,56 @@ export async function PATCH(request: Request) {
 // DELETE - Delete user
 export async function DELETE(request: Request) {
   try {
+    const currentUser = getUserFromToken(request)
+
+    if (!currentUser) {
+      return NextResponse.json({ error: "Не авторизован" }, { status: 401 })
+    }
+
     const { searchParams } = new URL(request.url)
     const userId = searchParams.get("id")
-    const currentUserRole = searchParams.get("currentUserRole")
 
-    console.log("[v0] Users API: Deleting user:", userId)
+    console.log("[Users API] Deleting user:", userId, "by:", currentUser.username)
 
     if (!userId) {
       return NextResponse.json({ error: "ID пользователя обязателен" }, { status: 400 })
     }
 
-    // Check if user exists and get their role
     const { data: existingUser, error: fetchError } = await supabase
-        .from('users')
-        .select('role')
-        .eq('id', userId)
+        .from("users")
+        .select("role")
+        .eq("id", userId)
         .single()
 
     if (fetchError || !existingUser) {
       return NextResponse.json({ error: "Пользователь не найден" }, { status: 404 })
     }
 
-    // Don't allow deleting root user
     if (existingUser.role === "root") {
       return NextResponse.json({ error: "Нельзя удалить root пользователя" }, { status: 403 })
     }
 
-    // Admin restrictions
-    if (currentUserRole === "admin") {
-      // Admins can't delete other admins
-      if (existingUser.role === "admin") {
-        return NextResponse.json({
-          error: "Администраторы не могут удалять других администраторов"
-        }, { status: 403 })
-      }
+    // Admin не может удалять других админов
+    if (currentUser.role === "admin" && existingUser.role === "admin") {
+      return NextResponse.json(
+          {
+            error: "Администраторы не могут удалять других администраторов",
+          },
+          { status: 403 },
+      )
     }
 
-    // Delete user
-    const { error: deleteError } = await supabase
-        .from('users')
-        .delete()
-        .eq('id', userId)
+    const { error: deleteError } = await supabase.from("users").delete().eq("id", userId)
 
     if (deleteError) {
-      console.error("[v0] Supabase error:", deleteError)
+      console.error("[Users API] Supabase error:", deleteError)
       return NextResponse.json({ error: "Не удалось удалить пользователя" }, { status: 500 })
     }
 
-    console.log("[v0] Users API: User deleted successfully")
+    console.log("[Users API] User deleted successfully")
     return NextResponse.json({ message: "Пользователь успешно удален" })
   } catch (error) {
-    console.error("[v0] Users API: Error deleting user:", error)
+    console.error("[Users API] Error deleting user:", error)
     return NextResponse.json({ error: "Ошибка при удалении пользователя" }, { status: 500 })
   }
 }

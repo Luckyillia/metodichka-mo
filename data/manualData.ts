@@ -16,4 +16,5 @@ export const navItems: NavItem[] = [
   { id: "forum-responses", title: "Работа по форуму", icon: "💬" },
   { id: "report-generator", title: "Генератор отчетов", icon: "📝" },
   { id: "user-management", title: "Управление пользователями", icon: "👥" },
+  { id: "action-log", title: "Журнал действий", icon: "📋" },
 ]

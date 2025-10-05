@@ -10,20 +10,20 @@ const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfa
 
 
 export default function RootLayout({
-  children,
-}: {
+                                     children,
+                                   }: {
   children: React.ReactNode
 }) {
   return (
-    <html lang="ru">
+      <html lang="ru">
       <body className={`${inter.variable} ${playfair.variable} font-sans`}>
-        <Suspense fallback={null}>
-          <AuthProvider>
-            {children}
-            <Analytics />
-          </AuthProvider>
-        </Suspense>
+      <Suspense fallback={null}>
+        <AuthProvider>
+          {children}
+          <Analytics />
+        </AuthProvider>
+      </Suspense>
       </body>
-    </html>
+      </html>
   )
 }

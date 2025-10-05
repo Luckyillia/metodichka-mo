@@ -1,39 +1,38 @@
 // lib/auth/auth-service.ts
-import type { User } from "./types"
-import CryptoJS from 'crypto-js'
+import type { User, ActionLog } from "./types"
+import CryptoJS from "crypto-js"
 
 const AUTH_STORAGE_KEY = "mod_auth_encrypted"
-const ENCRYPTION_KEY = process.env.MZ_ENCRYPTION_KEY || 'fallback-key-change-in-production'
+const ENCRYPTION_KEY = process.env.MZ_ENCRYPTION_KEY || "fallback-key-change-in-production"
+const SESSION_DURATION = 7 * 24 * 60 * 60 * 1000 // 7 days in milliseconds
 
 export class AuthService {
   static async login(username: string, password: string): Promise<User | null> {
     try {
-      console.log("[v1] AuthService: Sending login request for:", username)
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
       })
 
-      console.log("[v1] AuthService: Response status:", response.status)
-
       if (!response.ok) {
-        console.log("[v1] AuthService: Login failed with status:", response.status)
         return null
       }
 
       const user = await response.json()
-      console.log("[v1] AuthService: Received user data:", user)
 
-      // Создаем токен аутентификации
       const authToken = this.createAuthToken(user)
 
-      // Шифруем и сохраняем
+      // Encrypt and save
       this.saveEncryptedUser(authToken)
+
+      if (user.role === "admin" || user.role === "root") {
+        await this.logAction(user.id, user.game_nick, "Вход в систему")
+      }
 
       return user
     } catch (error) {
-      console.error("[v1] AuthService: Login error:", error)
+      console.error("[AuthService] Login error:", error)
       return null
     }
   }
@@ -41,29 +40,30 @@ export class AuthService {
   static createAuthToken(user: User): string {
     const tokenData = {
       ...user,
+      loginTimestamp: Date.now(), // Store login time for 7-day expiration
       timestamp: Date.now(),
-      signature: this.createSignature(user)
+      signature: this.createSignature(user),
     }
 
-    return Buffer.from(JSON.stringify(tokenData)).toString('base64')
+    return Buffer.from(JSON.stringify(tokenData)).toString("base64")
   }
 
   static createSignature(user: User): string {
-    // Создаем цифровую подпись для проверки целостности
     const signatureData = `${user.id}:${user.username}:${user.role}:${user.game_nick}`
     return CryptoJS.HmacSHA256(signatureData, ENCRYPTION_KEY).toString()
   }
 
   static verifyTokenSignature(token: string): boolean {
     try {
-      const decoded = JSON.parse(Buffer.from(token, 'base64').toString())
+      const decoded = JSON.parse(Buffer.from(token, "base64").toString())
 
-      // Проверяем срок действия (24 часа)
-      if (Date.now() - decoded.timestamp > 24 * 60 * 60 * 1000) {
+      // Check 7-day session expiration
+      const loginTimestamp = decoded.loginTimestamp || decoded.timestamp
+      if (Date.now() - loginTimestamp > SESSION_DURATION) {
         return false
       }
 
-      // Проверяем подпись
+      // Verify signature
       const expectedSignature = this.createSignature(decoded)
       return decoded.signature === expectedSignature
     } catch {
@@ -73,10 +73,8 @@ export class AuthService {
 
   static saveEncryptedUser(token: string): void {
     if (typeof window !== "undefined") {
-      // Шифруем данные перед сохранением
       const encrypted = CryptoJS.AES.encrypt(token, ENCRYPTION_KEY).toString()
       localStorage.setItem(AUTH_STORAGE_KEY, encrypted)
-      console.log("[v1] AuthService: Encrypted user saved to localStorage")
     }
   }
 
@@ -97,7 +95,6 @@ export class AuthService {
     }
 
     try {
-      // Дешифруем данные
       const bytes = CryptoJS.AES.decrypt(encrypted, ENCRYPTION_KEY)
       const token = bytes.toString(CryptoJS.enc.Utf8)
 
@@ -106,12 +103,11 @@ export class AuthService {
         return null
       }
 
-      const userData = JSON.parse(Buffer.from(token, 'base64').toString())
-      // Удаляем служебные поля
-      const { timestamp, signature, ...user } = userData
+      const userData = JSON.parse(Buffer.from(token, "base64").toString())
+      const { timestamp, signature, loginTimestamp, ...user } = userData
       return user as User
     } catch (error) {
-      console.error("[v1] AuthService: Error decrypting user:", error)
+      console.error("[AuthService] Error decrypting user:", error)
       this.logout()
       return null
     }
@@ -141,6 +137,22 @@ export class AuthService {
     }
   }
 
+  static async fetchWithAuth(url: string, options: RequestInit = {}): Promise<Response> {
+    const token = this.getAuthToken()
+
+    if (!token) {
+      throw new Error("No authentication token")
+    }
+
+    const headers = new Headers(options.headers)
+    headers.set("Authorization", `Bearer ${token}`)
+
+    return fetch(url, {
+      ...options,
+      headers,
+    })
+  }
+
   static hasRole(user: User | null, allowedRoles: string[]): boolean {
     if (!user) return false
     return allowedRoles.includes(user.role)
@@ -160,6 +172,7 @@ export class AuthService {
 
     const ccSections = [...publicSections, "goss-wave", "announcements", "forum-responses", "report-generator"]
     const adminSections = [...ccSections, "exam-section", "ammunition-supplies"]
+    const privilegedSections = [...adminSections, "user-management", "action-log"]
 
     if (!user) {
       return publicSections.includes(sectionId)
@@ -168,7 +181,7 @@ export class AuthService {
     switch (user.role) {
       case "root":
       case "admin":
-        return true
+        return privilegedSections.includes(sectionId)
       case "cc":
         return ccSections.includes(sectionId)
       case "user":
@@ -177,4 +190,41 @@ export class AuthService {
         return publicSections.includes(sectionId)
     }
   }
+
+  static async logAction(userId: string, gameNick: string, action: string, details?: string): Promise<void> {
+    try {
+      const log: ActionLog = {
+        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        user_id: userId,
+        game_nick: gameNick,
+        action,
+        timestamp: new Date().toISOString(),
+        details,
+      }
+
+      // Store in localStorage for now (in production, this should be sent to a backend)
+      const logs = this.getActionLogs()
+      logs.unshift(log)
+
+      // Keep only last 1000 logs
+      const trimmedLogs = logs.slice(0, 1000)
+      localStorage.setItem("mod_action_logs", JSON.stringify(trimmedLogs))
+    } catch (error) {
+      console.error("[AuthService] Error logging action:", error)
+    }
+  }
+
+  static getActionLogs(): ActionLog[] {
+    if (typeof window === "undefined") {
+      return []
+    }
+
+    try {
+      const logs = localStorage.getItem("mod_action_logs")
+      return logs ? JSON.parse(logs) : []
+    } catch {
+      return []
+    }
+  }
 }
+

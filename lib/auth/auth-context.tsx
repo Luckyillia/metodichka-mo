@@ -20,20 +20,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   })
 
   useEffect(() => {
-    console.log("[v0] AuthProvider: Checking for existing session")
     const user = AuthService.getCurrentUser()
-    console.log("[v0] AuthProvider: Loaded user from storage:", user)
     setState({
       user,
       isAuthenticated: !!user,
       isLoading: false,
     })
-  }, [])
+
+    const checkSessionInterval = setInterval(() => {
+      const currentUser = AuthService.getCurrentUser()
+      if (!currentUser && state.isAuthenticated) {
+        // Session expired, log out
+        setState({
+          user: null,
+          isAuthenticated: false,
+          isLoading: false,
+        })
+      }
+    }, 60000) // Check every minute
+
+    return () => clearInterval(checkSessionInterval)
+  }, [state.isAuthenticated])
 
   const login = async (username: string, password: string): Promise<boolean> => {
-    console.log("[v0] AuthContext: Starting login for username:", username)
     const user = await AuthService.login(username, password)
-    console.log("[v0] AuthContext: Login result:", user)
 
     if (user) {
       setState({
@@ -41,15 +51,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: true,
         isLoading: false,
       })
-      console.log("[v0] AuthContext: State updated with user:", user)
       return true
     }
 
-    console.log("[v0] AuthContext: Login failed")
     return false
   }
 
   const logout = () => {
+    if (state.user && (state.user.role === "admin" || state.user.role === "root")) {
+      AuthService.logAction(state.user.id, state.user.game_nick, "Выход из системы")
+    }
+
     AuthService.logout()
     setState({
       user: null,
@@ -63,16 +75,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider
-      value={{
-        ...state,
-        login,
-        logout,
-        canAccessSection,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+      <AuthContext.Provider
+          value={{
+            ...state,
+            login,
+            logout,
+            canAccessSection,
+          }}
+      >
+        {children}
+      </AuthContext.Provider>
   )
 }
 
