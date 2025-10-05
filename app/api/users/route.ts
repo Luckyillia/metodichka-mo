@@ -2,8 +2,7 @@ import { NextResponse } from "next/server"
 import { supabase, validateGameNick } from "@/lib/supabase"
 import bcrypt from "bcryptjs"
 import CryptoJS from "crypto-js"
-
-const ENCRYPTION_KEY = process.env.MZ_ENCRYPTION_KEY || "fallback-key-change-in-production"
+import { ENCRYPTION_KEY, SESSION_DURATION } from "@/lib/auth/constants"
 
 // Вспомогательная функция для получения данных пользователя из заголовков
 function getUserFromToken(request: Request) {
@@ -29,7 +28,6 @@ function getUserFromToken(request: Request) {
     }
 
     // Check 7-day session expiration
-    const SESSION_DURATION = 7 * 24 * 60 * 60 * 1000
     const loginTimestamp = decoded.loginTimestamp || decoded.timestamp
     if (Date.now() - loginTimestamp > SESSION_DURATION) {
       console.error("[Users API] Token expired")
@@ -160,6 +158,31 @@ export async function POST(request: Request) {
     }
 
     console.log("[Users API] User created successfully:", username)
+
+    // Логируем создание пользователя
+    try {
+      await supabase.from("action_logs").insert([
+        {
+          user_id: currentUser.id,
+          game_nick: currentUser.game_nick,
+          action: `Создан новый пользователь: ${gameNick}`,
+          action_type: "create",
+          target_type: "user",
+          target_id: newUser.id,
+          target_name: gameNick,
+          details: `Создан пользователь с логином "${username}" и ролью "${role}"`,
+          metadata: {
+            username,
+            game_nick: gameNick,
+            role,
+            created_by: currentUser.game_nick,
+          },
+        },
+      ])
+    } catch (logError) {
+      console.error("[Users API] Failed to log action:", logError)
+    }
+
     return NextResponse.json(newUser, { status: 201 })
   } catch (error) {
     console.error("[Users API] Error creating user:", error)
@@ -372,7 +395,7 @@ export async function DELETE(request: Request) {
 
     const { data: existingUser, error: fetchError } = await supabase
         .from("users")
-        .select("role")
+        .select("id, role, username, game_nick")
         .eq("id", userId)
         .single()
 
@@ -402,7 +425,32 @@ export async function DELETE(request: Request) {
     }
 
     console.log("[Users API] User deleted successfully")
-    return NextResponse.json({ message: "Пользователь успешно удален" })
+
+    // Логируем удаление пользователя
+    try {
+      await supabase.from("action_logs").insert([
+        {
+          user_id: currentUser.id,
+          game_nick: currentUser.game_nick,
+          action: `Удален пользователь: ${existingUser.game_nick || "Unknown"}`,
+          action_type: "delete",
+          target_type: "user",
+          target_id: userId,
+          target_name: existingUser.game_nick,
+          details: `Удален пользователь с логином "${existingUser.username}" и ролью "${existingUser.role}"`,
+          metadata: {
+            deleted_username: existingUser.username,
+            deleted_game_nick: existingUser.game_nick,
+            deleted_role: existingUser.role,
+            deleted_by: currentUser.game_nick,
+          },
+        },
+      ])
+    } catch (logError) {
+      console.error("[Users API] Failed to log action:", logError)
+    }
+
+    return NextResponse.json({ message: "Пользователь удален" });
   } catch (error) {
     console.error("[Users API] Error deleting user:", error)
     return NextResponse.json({ error: "Ошибка при удалении пользователя" }, { status: 500 })

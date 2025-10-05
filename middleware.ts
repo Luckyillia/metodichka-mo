@@ -1,10 +1,10 @@
-// middleware.ts (в корне проекта, не в app/api!)
+// middleware.ts
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import CryptoJS from 'crypto-js'
+import { ENCRYPTION_KEY, SESSION_DURATION } from './lib/auth/constants'
 
-const ENCRYPTION_KEY = process.env.MZ_ENCRYPTION_KEY || 'fallback-key-change-in-production'
-
-async function verifyAuthToken(token: string): Promise<any> {
+function verifyAuthToken(token: string): any {
     try {
         const decodedStr = Buffer.from(token, 'base64').toString()
         const decoded = JSON.parse(decodedStr)
@@ -17,29 +17,18 @@ async function verifyAuthToken(token: string): Promise<any> {
             return null
         }
 
-        // Проверяем подпись с Web Crypto API
-        const encoder = new TextEncoder()
-        const keyData = encoder.encode(ENCRYPTION_KEY)
-        const signatureData = encoder.encode(`${decoded.id}:${decoded.username}:${decoded.role}:${decoded.game_nick}`)
-
-        const cryptoKey = await crypto.subtle.importKey(
-            'raw',
-            keyData,
-            { name: 'HMAC', hash: 'SHA-256' },
-            false,
-            ['sign']
-        )
-
-        const signature = await crypto.subtle.sign('HMAC', cryptoKey, signatureData)
-        const expectedSignature = Array.from(new Uint8Array(signature))
-            .map(b => b.toString(16).padStart(2, '0'))
-            .join('')
+        // Проверяем подпись используя тот же метод что и в auth-service
+        const signatureData = `${decoded.id}:${decoded.username}:${decoded.role}:${decoded.game_nick}`
+        const expectedSignature = CryptoJS.HmacSHA256(signatureData, ENCRYPTION_KEY).toString()
 
         if (decoded.signature !== expectedSignature) {
             console.log('[Middleware] Invalid signature')
+            console.log('[Middleware] Expected:', expectedSignature)
+            console.log('[Middleware] Got:', decoded.signature)
             return null
         }
 
+        console.log('[Middleware] Token verified successfully for user:', decoded.username)
         return decoded
     } catch (error) {
         console.error('[Middleware] Token verification error:', error)
@@ -47,23 +36,23 @@ async function verifyAuthToken(token: string): Promise<any> {
     }
 }
 
-export async function middleware(request: NextRequest) {
+export function middleware(request: NextRequest) {
     const path = request.nextUrl.pathname
 
     // Защищаем все API маршруты кроме login
-    if (path.startsWith('/api/') && !path.startsWith('/api/login')) {
+    if (path.startsWith('/api/') && !path.startsWith('/api/auth/login')) {
         const authHeader = request.headers.get('authorization')
 
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            console.log('[Middleware] No authorization header')
+            console.log('[Middleware] No authorization header for path:', path)
             return NextResponse.json({ error: 'Не авторизован' }, { status: 401 })
         }
 
         const token = authHeader.substring(7)
-        const user = await verifyAuthToken(token)
+        const user = verifyAuthToken(token)
 
         if (!user) {
-            console.log('[Middleware] Invalid token')
+            console.log('[Middleware] Invalid token for path:', path)
             return NextResponse.json({ error: 'Недействительный токен' }, { status: 401 })
         }
 
@@ -83,6 +72,15 @@ export async function middleware(request: NextRequest) {
             }
         }
 
+        // Проверяем права для просмотра логов
+        if (path.startsWith('/api/action-logs')) {
+            // Только root и admin могут просматривать логи
+            if (user.role !== 'root' && user.role !== 'admin') {
+                console.log('[Middleware] Insufficient permissions for action-logs API')
+                return NextResponse.json({ error: 'Недостаточно прав' }, { status: 403 })
+            }
+        }
+
         // Добавляем информацию о пользователе в заголовки
         const headers = new Headers(request.headers)
         headers.set('x-user-id', user.id)
@@ -90,7 +88,7 @@ export async function middleware(request: NextRequest) {
         headers.set('x-user-username', user.username)
         headers.set('x-user-game-nick', user.game_nick)
 
-        console.log('[Middleware] User authenticated:', user.username, 'Role:', user.role)
+        console.log('[Middleware] User authenticated:', user.username, 'Role:', user.role, 'Path:', path)
 
         return NextResponse.next({
             request: {
@@ -105,5 +103,7 @@ export async function middleware(request: NextRequest) {
 export const config = {
     matcher: [
         '/api/users/:path*',
+        '/api/action-logs',
+        '/api/action-logs/:path*',
     ]
 }

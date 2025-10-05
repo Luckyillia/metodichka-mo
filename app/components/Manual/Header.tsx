@@ -37,26 +37,26 @@ export default function Header() {
             {isAuthenticated && user ? (
               <>
                 <div className="flex items-center gap-3 px-4 py-2 bg-slate-800/50 rounded-lg border border-slate-700">
-                  <Shield className="w-4 h-4 text-slate-400" />
+                  <Shield className="w-4 h-4 text-slate-400"/>
                   <div className="flex flex-col">
-                    <span className="text-sm text-slate-200 font-medium">{user.username}</span>
+                    <span className="text-sm text-slate-200 font-medium">{user.game_nick}</span>
                     <span className={`text-xs px-2 py-0.5 rounded ${getRoleBadge(user.role).color} text-white w-fit`}>
                       {getRoleBadge(user.role).label}
                     </span>
                   </div>
                 </div>
                 <button
-                  onClick={handleLogout}
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-700/50 text-slate-200 hover:bg-slate-700 transition-colors border border-slate-600"
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-700/50 text-slate-200 hover:bg-slate-700 transition-colors border border-slate-600"
                 >
-                  <LogOut className="w-4 h-4" />
+                  <LogOut className="w-4 h-4"/>
                   <span>Выйти</span>
                 </button>
               </>
             ) : (
-              <Link
-                href="/login"
-                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-700/50 text-slate-200 hover:bg-slate-700 transition-colors border border-slate-600"
+                <Link
+                    href="/login"
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-700/50 text-slate-200 hover:bg-slate-700 transition-colors border border-slate-600"
               >
                 <Users className="w-4 h-4" />
                 <span>Войти</span>
