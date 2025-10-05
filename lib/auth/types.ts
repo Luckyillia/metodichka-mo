@@ -1,3 +1,4 @@
+// lib/auth/types.ts
 export type UserRole = "guest" | "user" | "cc" | "admin" | "root"
 
 export interface User {
@@ -5,6 +6,7 @@ export interface User {
   username: string
   game_nick: string
   role: "root" | "admin" | "cc" | "user"
+  active: boolean
   created_at: string
 }
 
@@ -14,13 +16,26 @@ export interface AuthState {
   isLoading: boolean
 }
 
+export type ActionType =
+    | 'create'
+    | 'update'
+    | 'delete'
+    | 'role_change'
+    | 'login'
+    | 'logout'
+    | 'deactivate'
+    | 'restore'
+    | 'other'
+
+export type TargetType = 'user' | 'system' | 'report' | 'other'
+
 export interface ActionLog {
   id: string
   user_id: string
   game_nick: string
   action: string
-  action_type: 'create' | 'update' | 'delete' | 'role_change' | 'login' | 'logout' | 'other'
-  target_type?: 'user' | 'system' | 'report' | 'other'
+  action_type: ActionType
+  target_type?: TargetType
   target_id?: string
   target_name?: string
   details?: string
@@ -28,4 +43,20 @@ export interface ActionLog {
   ip_address?: string
   user_agent?: string
   created_at: string
+  undone?: boolean
+  undone_at?: string
+  undone_by_user_id?: string
+  undone_by_game_nick?: string
+  previous_state?: Record<string, any>
+  new_state?: Record<string, any>
+}
+
+export interface UndoActionRequest {
+  logId: string
+}
+
+export interface UndoActionResponse {
+  success: boolean
+  message: string
+  restoredUser?: User
 }

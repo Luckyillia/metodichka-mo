@@ -15,9 +15,7 @@ const TrainingSection = lazy(() => import("@/app/components/Manual/sections/defa
 const EventsSection = lazy(() => import("@/app/components/Manual/sections/default/EventsSection"))
 const ExamSection = lazy(() => import("@/app/components/Manual/sections/default/ExamSection"))
 const AmmunitionSupplies = lazy(() => import("@/app/components/Manual/sections/default/AmmunitionSupplies"))
-const InterviewConscriptSection = lazy(
-    () => import("@/app/components/Manual/sections/default/InterviewConscriptSection"),
-)
+const InterviewConscriptSection = lazy(() => import("@/app/components/Manual/sections/default/InterviewConscriptSection"),)
 const InterviewContractSection = lazy(() => import("@/app/components/Manual/sections/default/InterviewContractSection"))
 const RPTaskSection = lazy(() => import("@/app/components/Manual/sections/default/RPTaskSection"))
 import MinistryOfDefense from "@/app/components/Manual/sections/default/MinistryOfDefense"
@@ -27,6 +25,7 @@ const GossWaveSection = lazy(() => import("@/app/components/Manual/sections/ss/G
 const ReportGenerator = lazy(() => import("@/app/components/Manual/sections/ss/ReportGenerator"))
 const UserManagementSection = lazy(() => import("@/app/components/Manual/sections/admin/UserManagementSection"))
 const ActionLogSection = lazy(() => import("@/app/components/Manual/sections/admin/ActionLogSection"))
+const ParkingSpaces = lazy(() => import("@/app/components/Manual/sections/default/ParkingSpaces"))
 
 const sectionComponents: Record<string, React.ComponentType> = {
   overview: OverviewSection,
@@ -45,6 +44,7 @@ const sectionComponents: Record<string, React.ComponentType> = {
   "report-generator": ReportGenerator,
   "user-management": UserManagementSection,
   "action-log": ActionLogSection,
+  "parking-spaces": ParkingSpaces,
 }
 
 const getSectionTitle = (id: string) => {

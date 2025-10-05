@@ -9,22 +9,17 @@ function verifyAuthToken(token: string): any {
         const decodedStr = Buffer.from(token, 'base64').toString()
         const decoded = JSON.parse(decodedStr)
 
-        // Проверяем срок действия (7 дней)
-        const SESSION_DURATION = 7 * 24 * 60 * 60 * 1000
         const loginTimestamp = decoded.loginTimestamp || decoded.timestamp
         if (Date.now() - loginTimestamp > SESSION_DURATION) {
             console.log('[Middleware] Token expired')
             return null
         }
 
-        // Проверяем подпись используя тот же метод что и в auth-service
         const signatureData = `${decoded.id}:${decoded.username}:${decoded.role}:${decoded.game_nick}`
         const expectedSignature = CryptoJS.HmacSHA256(signatureData, ENCRYPTION_KEY).toString()
 
         if (decoded.signature !== expectedSignature) {
             console.log('[Middleware] Invalid signature')
-            console.log('[Middleware] Expected:', expectedSignature)
-            console.log('[Middleware] Got:', decoded.signature)
             return null
         }
 
@@ -56,7 +51,6 @@ export async function middleware(request: NextRequest) {
             return NextResponse.json({ error: 'Недействительный токен' }, { status: 401 })
         }
 
-        // Проверяем права для управления пользователями
         // Проверяем права для управления пользователями
         if (path.startsWith('/api/users')) {
             // Только root и admin могут работать с пользователями
@@ -137,7 +131,7 @@ export async function middleware(request: NextRequest) {
         }
 
         // Проверяем права для просмотра логов
-        if (path.startsWith('/api/action-logs')) {
+        if (path.startsWith('/api/action-logs') && !path.includes('action-logs-internal')) {
             // Только root и admin могут просматривать логи
             if (user.role !== 'root' && user.role !== 'admin') {
                 console.log('[Middleware] Insufficient permissions for action-logs API')

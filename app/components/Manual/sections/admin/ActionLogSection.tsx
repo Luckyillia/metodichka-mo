@@ -1,21 +1,37 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import { AuthService } from "@/lib/auth/auth-service"
 import type { ActionLog } from "@/lib/auth/types"
-import { Clock, User, FileText, Filter, ChevronLeft, ChevronRight, Eye } from "lucide-react"
+import {
+    Clock,
+    User,
+    FileText,
+    Filter,
+    ChevronLeft,
+    ChevronRight,
+    Eye,
+    Undo2,
+    Loader2,
+    RotateCcw,
+    AlertCircle, X, CheckCircle
+} from "lucide-react"
+import {useAuth} from "@/lib/auth/auth-context";
 
 export default function ActionLogSection() {
+    const { user: currentUser } = useAuth()
     const [logs, setLogs] = useState<ActionLog[]>([])
     const [filteredLogs, setFilteredLogs] = useState<ActionLog[]>([])
     const [total, setTotal] = useState(0)
     const [isLoading, setIsLoading] = useState(true)
+    const [error, setError] = useState("")
+    const [success, setSuccess] = useState("")
     const [currentPage, setCurrentPage] = useState(1)
     const [selectedActionType, setSelectedActionType] = useState<string>("all")
     const [selectedTargetType, setSelectedTargetType] = useState<string>("all")
     const [selectedLog, setSelectedLog] = useState<ActionLog | null>(null)
 
-    const logsPerPage = 20
+    const logsPerPage = 5
 
     useEffect(() => {
         loadLogs()
@@ -56,6 +72,12 @@ export default function ActionLogSection() {
         }).format(date)
     }
 
+    const canUndo = (log: ActionLog) => {
+        if (log.user_id !== currentUser?.id) return false
+        if (log.undone) return false
+        return ["deactivate", "role_change", "update"].includes(log.action_type)
+    }
+
     const getActionTypeColor = (type: string) => {
         const colors: Record<string, string> = {
             create: "bg-green-600",
@@ -65,6 +87,8 @@ export default function ActionLogSection() {
             login: "bg-teal-600",
             logout: "bg-gray-600",
             other: "bg-slate-600",
+            restore: "bg-emerald-600",
+            deactivate: "bg-orange-600",
         }
         return colors[type] || "bg-gray-600"
     }
@@ -78,6 +102,8 @@ export default function ActionLogSection() {
             login: "Вход",
             logout: "Выход",
             other: "Другое",
+            restore: "Восстановление",
+            deactivate: "Деактивация",
         }
         return labels[type] || type
     }
@@ -94,6 +120,23 @@ export default function ActionLogSection() {
     }
 
     const totalPages = Math.ceil(total / logsPerPage)
+
+    const handleUndoAction = async (logId: string) => {
+        if (!confirm("Вы уверены, что хотите отменить это действие?")) {
+            return
+        }
+
+        setError("")
+        setSuccess("")
+
+        try {
+            const result = await AuthService.undoAction(logId)
+            setSuccess(result.message)
+            loadLogs()
+        } catch (err: any) {
+            setError(err.message || "Не удалось отменить действие")
+        }
+    }
 
     const handlePreviousPage = () => {
         if (currentPage > 1) setCurrentPage(currentPage - 1)
@@ -217,6 +260,27 @@ export default function ActionLogSection() {
 
     return (
         <div className="space-y-6">
+            {/* Alerts */}
+            {error && (
+                <div className="flex items-center gap-2 p-4 bg-red-900/30 border border-red-700 rounded-lg text-red-300">
+                    <AlertCircle className="w-5 h-5 flex-shrink-0"/>
+                    <span>{error}</span>
+                    <button onClick={() => setError("")} className="ml-auto">
+                        <X className="w-5 h-5"/>
+                    </button>
+                </div>
+            )}
+
+            {success && (
+                <div
+                    className="flex items-center gap-2 p-4 bg-green-900/30 border border-green-700 rounded-lg text-green-300">
+                    <CheckCircle className="w-5 h-5 flex-shrink-0"/>
+                    <span>{success}</span>
+                    <button onClick={() => setSuccess("")} className="ml-auto">
+                        <X className="w-5 h-5"/>
+                    </button>
+                </div>
+            )}
             <div className="bg-slate-900/50 rounded-lg p-6 border border-slate-700">
                 <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
                     <Filter className="w-5 h-5 text-blue-400" />
@@ -327,9 +391,9 @@ export default function ActionLogSection() {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium text-white ${getActionTypeColor(log.action_type)}`}>
-                          {getActionTypeLabel(log.action_type)}
-                        </span>
+                                            <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium text-white ${getActionTypeColor(log.action_type)}`}>
+                                              {getActionTypeLabel(log.action_type)}
+                                            </span>
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className="text-sm text-slate-200">{log.action}</span>
@@ -345,6 +409,16 @@ export default function ActionLogSection() {
                                                 <Eye className="w-4 h-4" />
                                                 Показать
                                             </button>
+                                            {canUndo(log) && (
+                                                <button
+                                                    onClick={() => handleUndoAction(log.id)}
+                                                    className="flex items-center gap-1 text-sm text-orange-400 hover:text-orange-300 transition-colors"
+                                                    title="Отменить действие"
+                                                >
+                                                    <RotateCcw className="w-4 h-4"/>
+                                                    Отменить
+                                                </button>
+                                            )}
                                         </td>
                                     </tr>
                                 ))}

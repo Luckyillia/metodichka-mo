@@ -22,11 +22,7 @@ export class AuthService {
       console.log('[AuthService] Login successful, user:', user.username, 'role:', user.role)
 
       const authToken = this.createAuthToken(user)
-      console.log('[AuthService] Auth token created')
-
-      // Encrypt and save
       this.saveEncryptedUser(authToken)
-      console.log('[AuthService] Token saved to localStorage')
 
       return user
     } catch (error) {
@@ -43,40 +39,26 @@ export class AuthService {
       signature: this.createSignature(user),
     }
 
-    const token = Buffer.from(JSON.stringify(tokenData)).toString("base64")
-    console.log('[AuthService] Token created for user:', user.username)
-    return token
+    return Buffer.from(JSON.stringify(tokenData)).toString("base64")
   }
 
   static createSignature(user: User): string {
     const signatureData = `${user.id}:${user.username}:${user.role}:${user.game_nick}`
-    const signature = CryptoJS.HmacSHA256(signatureData, ENCRYPTION_KEY).toString()
-    console.log('[AuthService] Signature created for:', user.username)
-    return signature
+    return CryptoJS.HmacSHA256(signatureData, ENCRYPTION_KEY).toString()
   }
 
   static verifyTokenSignature(token: string): boolean {
     try {
       const decoded = JSON.parse(Buffer.from(token, "base64").toString())
 
-      // Check 7-day session expiration
       const loginTimestamp = decoded.loginTimestamp || decoded.timestamp
       if (Date.now() - loginTimestamp > SESSION_DURATION) {
         console.warn('[AuthService] Token expired')
         return false
       }
 
-      // Verify signature
       const expectedSignature = this.createSignature(decoded)
-      const isValid = decoded.signature === expectedSignature
-
-      if (!isValid) {
-        console.error('[AuthService] Signature mismatch!')
-        console.log('[AuthService] Expected:', expectedSignature)
-        console.log('[AuthService] Got:', decoded.signature)
-      }
-
-      return isValid
+      return decoded.signature === expectedSignature
     } catch (error) {
       console.error('[AuthService] Token verification error:', error)
       return false
@@ -88,7 +70,6 @@ export class AuthService {
       try {
         const encrypted = CryptoJS.AES.encrypt(token, ENCRYPTION_KEY).toString()
         localStorage.setItem(AUTH_STORAGE_KEY, encrypted)
-        console.log('[AuthService] Token encrypted and saved')
       } catch (error) {
         console.error('[AuthService] Error saving token:', error)
       }
@@ -98,7 +79,6 @@ export class AuthService {
   static logout(): void {
     if (typeof window !== "undefined") {
       localStorage.removeItem(AUTH_STORAGE_KEY)
-      console.log('[AuthService] User logged out, token removed')
     }
   }
 
@@ -109,7 +89,6 @@ export class AuthService {
 
     const encrypted = localStorage.getItem(AUTH_STORAGE_KEY)
     if (!encrypted) {
-      console.log('[AuthService] No encrypted token found')
       return null
     }
 
@@ -118,7 +97,6 @@ export class AuthService {
       const token = bytes.toString(CryptoJS.enc.Utf8)
 
       if (!token || !this.verifyTokenSignature(token)) {
-        console.warn('[AuthService] Invalid token, logging out')
         this.logout()
         return null
       }
@@ -126,7 +104,6 @@ export class AuthService {
       const userData = JSON.parse(Buffer.from(token, "base64").toString())
       const { timestamp, signature, loginTimestamp, ...user } = userData
 
-      console.log('[AuthService] Current user retrieved:', user.username, 'role:', user.role)
       return user as User
     } catch (error) {
       console.error("[AuthService] Error decrypting user:", error)
@@ -142,7 +119,6 @@ export class AuthService {
 
     const encrypted = localStorage.getItem(AUTH_STORAGE_KEY)
     if (!encrypted) {
-      console.log('[AuthService] No token to retrieve')
       return null
     }
 
@@ -151,11 +127,9 @@ export class AuthService {
       const token = bytes.toString(CryptoJS.enc.Utf8)
 
       if (!token || !this.verifyTokenSignature(token)) {
-        console.warn('[AuthService] Token invalid or expired')
         return null
       }
 
-      console.log('[AuthService] Auth token retrieved successfully')
       return token
     } catch (error) {
       console.error('[AuthService] Error retrieving token:', error)
@@ -167,17 +141,11 @@ export class AuthService {
     const token = this.getAuthToken()
 
     if (!token) {
-      console.error("[AuthService] No authentication token found")
       throw new Error("No authentication token")
     }
 
-    console.log("[AuthService] Making authenticated request to:", url)
-    console.log("[AuthService] Token exists:", !!token)
-
     const headers = new Headers(options.headers)
     headers.set("Authorization", `Bearer ${token}`)
-
-    console.log("[AuthService] Request headers:", Object.fromEntries(headers.entries()))
 
     return fetch(url, {
       ...options,
@@ -200,11 +168,13 @@ export class AuthService {
       "interview-conscript",
       "interview-contract",
       "ministry-of-defense",
+      "parking-spaces",
+      "exam-section",
+      "ammunition-supplies",
     ]
 
     const ccSections = [...publicSections, "goss-wave", "announcements", "forum-responses", "report-generator"]
-    const adminSections = [...ccSections, "exam-section", "ammunition-supplies"]
-    const privilegedSections = [...adminSections, "user-management", "action-log"]
+    const privilegedSections = [...ccSections, "user-management", "action-log"]
 
     if (!user) {
       return publicSections.includes(sectionId)
@@ -227,7 +197,7 @@ export class AuthService {
       userId: string,
       gameNick: string,
       action: string,
-      actionType: "create" | "update" | "delete" | "role_change" | "login" | "logout" | "other" = "other",
+      actionType: "create" | "update" | "delete" | "role_change" | "login" | "logout" | "deactivate" | "restore" | "other" = "other",
       targetType?: "user" | "system" | "report" | "other",
       targetId?: string,
       targetName?: string,
@@ -274,23 +244,149 @@ export class AuthService {
       if (filters?.target_type) params.append("target_type", filters.target_type)
       if (filters?.user_id) params.append("user_id", filters.user_id)
 
-      console.log("[AuthService] Fetching logs with params:", params.toString())
-
       const response = await this.fetchWithAuth(`/api/action-logs?${params.toString()}`)
 
       if (!response.ok) {
-        console.error("[AuthService] Failed to fetch logs, status:", response.status)
-        const errorText = await response.text()
-        console.error("[AuthService] Error response:", errorText)
         throw new Error(`Failed to fetch logs: ${response.status}`)
       }
 
       const data = await response.json()
-      console.log("[AuthService] Logs fetched successfully:", data.logs?.length || 0)
       return data
     } catch (error) {
       console.error("[AuthService] Error fetching logs:", error)
       return { logs: [], total: 0 }
+    }
+  }
+
+  // Новые методы для работы с пользователями
+  static async getUsers(): Promise<User[]> {
+    try {
+      const response = await this.fetchWithAuth("/api/users")
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch users")
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error("[AuthService] Error fetching users:", error)
+      return []
+    }
+  }
+
+  static async createUser(username: string, gameNick: string, password: string, role: string): Promise<User | null> {
+    try {
+      const response = await this.fetchWithAuth("/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, gameNick, password, role }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || "Failed to create user")
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error("[AuthService] Error creating user:", error)
+      throw error
+    }
+  }
+
+  static async updateUser(userId: string, username: string, gameNick: string, password?: string): Promise<User | null> {
+    try {
+      const response = await this.fetchWithAuth("/api/users", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, username, gameNick, password }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || "Failed to update user")
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error("[AuthService] Error updating user:", error)
+      throw error
+    }
+  }
+
+  static async updateUserRole(userId: string, role: string): Promise<User | null> {
+    try {
+      const response = await this.fetchWithAuth("/api/users", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, role }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || "Failed to update role")
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error("[AuthService] Error updating role:", error)
+      throw error
+    }
+  }
+
+  static async deactivateUser(userId: string): Promise<void> {
+    try {
+      const response = await this.fetchWithAuth(`/api/users?id=${userId}`, {
+        method: "DELETE",
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || "Failed to deactivate user")
+      }
+    } catch (error) {
+      console.error("[AuthService] Error deactivating user:", error)
+      throw error
+    }
+  }
+
+  static async restoreUser(userId: string): Promise<User | null> {
+    try {
+      const response = await this.fetchWithAuth("/api/users", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, action: "restore" }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || "Failed to restore user")
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error("[AuthService] Error restoring user:", error)
+      throw error
+    }
+  }
+
+  static async undoAction(logId: string): Promise<{ success: boolean; message: string; restoredUser?: User }> {
+    try {
+      const response = await this.fetchWithAuth("/api/users/undo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ logId }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || "Failed to undo action")
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error("[AuthService] Error undoing action:", error)
+      throw error
     }
   }
 }

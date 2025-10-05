@@ -90,30 +90,28 @@ const ParkingSpaces = () => {
     );
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-purple-800 p-5">
-            <div className="parking-table-container">
-                <div className="parking-table-header">
-                    <h1>🚗 Распределение парковочных мест</h1>
-                </div>
-
-                <TableSection
-                    title="Маршал, Начальники и Командиры подразделений (места 1-8)"
-                    data={commandersData}
-                    headerClass="commanders"
-                />
-
-                <TableSection
-                    title="Заместители Командиров Подразделений (места 9-12)"
-                    data={deputiesData}
-                    headerClass="deputies"
-                />
-
-                <TableSection
-                    title="Младший состав (места 13-36)"
-                    data={juniorData}
-                    headerClass="junior"
-                />
+        <div className="parking-table-container">
+            <div className="parking-table-header">
+                <h1>🚗 Распределение парковочных мест</h1>
             </div>
+
+            <TableSection
+                title="Маршал, Начальники и Командиры подразделений (места 1-8)"
+                data={commandersData}
+                headerClass="commanders"
+            />
+
+            <TableSection
+                title="Заместители Командиров Подразделений (места 9-12)"
+                data={deputiesData}
+                headerClass="deputies"
+            />
+
+            <TableSection
+                title="Младший состав (места 13-36)"
+                data={juniorData}
+                headerClass="junior"
+            />
         </div>
     );
 };
