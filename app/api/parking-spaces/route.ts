@@ -14,7 +14,7 @@ function getUserFromHeaders(request: Request) {
 
     return {
         id: userId,
-        role: role as "root" | "admin" | "cc" | "user",
+        role: role as "root" | "admin" | "ld" | "cc" | "user",
         username: username,
         game_nick: gameNick,
     }
@@ -22,7 +22,7 @@ function getUserFromHeaders(request: Request) {
 
 // Проверка прав на редактирование (LD = cc, admin, root)
 function canEditParkingSpaces(role: string): boolean {
-    return ["root", "admin", "cc"].includes(role)
+    return ["root", "admin", "ld"].includes(role)
 }
 
 // GET - Получить все парковочные места
@@ -120,15 +120,10 @@ export async function PUT(request: Request) {
             )
         }
 
-        // Логируем действие
+        // Логируем изменение роли
         try {
-            const ip_address = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip")
-            const user_agent = request.headers.get("user-agent")
-
-            await fetch(`${new URL(request.url).origin}/api/action-logs-internal`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
+            await supabase.from("action_logs").insert([
+                {
                     user_id: currentUser.id,
                     game_nick: currentUser.game_nick,
                     action: `Обновлено парковочное место №${place}`,
@@ -137,16 +132,22 @@ export async function PUT(request: Request) {
                     target_id: place.toString(),
                     target_name: `Парковочное место №${place}`,
                     details: `Изменено с: ${oldData?.person} (${oldData?.car}) на: ${person} (${car})`,
+                    previous_state: {
+                        oldPerson: oldData?.person,
+                        oldCar: oldData?.car,
+                    },
+                    new_state: {
+                        oldPerson: person,
+                        oldCar: car,
+                    },
                     metadata: {
                         old_data: oldData,
                         new_data: updatedSpace,
                     },
-                    ip_address,
-                    user_agent,
-                }),
-            })
+                },
+            ])
         } catch (logError) {
-            console.error("[Parking Spaces API] Failed to log action:", logError)
+            console.error("[Users API] Failed to log role change:", logError)
         }
 
         console.log("[Parking Spaces API] Successfully updated place:", place)
