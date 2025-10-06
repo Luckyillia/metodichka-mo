@@ -47,18 +47,21 @@ const ParkingSpaces = () => {
 
     // Проверка прав на редактирование
     const canEdit = user && ['root', 'admin', 'ld', 'cc'].includes(user.role);
-    
+
     // Загрузка данных
     useEffect(() => {
         fetchParkingData();
     }, []);
+
     const fetchParkingData = async () => {
         try {
             setIsLoading(true);
+            console.log('[ParkingSpaces] Fetching parking data...');
             const spaces = await AuthService.getParkingSpaces();
+            console.log('[ParkingSpaces] Fetched spaces:', spaces?.length || 0);
             setParkingData(spaces);
         } catch (error) {
-            console.error('Error fetching parking data:', error);
+            console.error('[ParkingSpaces] Error fetching parking data:', error);
             showNotification('error', 'Ошибка при загрузке данных');
         } finally {
             setIsLoading(false);
@@ -71,8 +74,8 @@ const ParkingSpaces = () => {
     };
 
     const handleEdit = (place: number) => {
+        console.log('[ParkingSpaces] Editing place:', place);
         setEditingPlace(place);
-        // Фокусируемся на первом инпуте после рендера без прокрутки страницы
         setTimeout(() => {
             if (personRef.current) {
                 personRef.current.focus({ preventScroll: true });
@@ -85,6 +88,8 @@ const ParkingSpaces = () => {
         const car = carRef.current?.value.trim() || '';
         const license = licenseRef.current?.value.trim() || '';
 
+        console.log('[ParkingSpaces] Saving place:', place, { person, car, license });
+
         if (!person || !car || !license) {
             showNotification('error', 'Все поля должны быть заполнены');
             return;
@@ -92,6 +97,8 @@ const ParkingSpaces = () => {
 
         try {
             setIsSaving(true);
+            console.log('[ParkingSpaces] Calling updateParkingSpace...');
+
             const updatedSpace = await AuthService.updateParkingSpace(
                 place,
                 person,
@@ -99,20 +106,25 @@ const ParkingSpaces = () => {
                 license
             );
 
+            console.log('[ParkingSpaces] Update successful:', updatedSpace);
+
+            // Обновляем состояние с новыми данными
             setParkingData(prev =>
-                prev.map(s => (s.place === place ? { ...s, person, car, license, ...updatedSpace } : s))
+                prev.map(s => (s.place === place ? { ...s, ...updatedSpace } : s))
             );
             setEditingPlace(null);
             showNotification('success', `Место №${place} успешно обновлено`);
         } catch (error: any) {
-            console.error('Error saving parking space:', error);
-            showNotification('error', error.message || 'Ошибка при сохранении данных');
+            console.error('[ParkingSpaces] Error saving parking space:', error);
+            const errorMessage = error?.message || 'Неизвестная ошибка';
+            showNotification('error', `Ошибка: ${errorMessage}`);
         } finally {
             setIsSaving(false);
         }
     };
 
     const handleCancel = () => {
+        console.log('[ParkingSpaces] Canceling edit');
         setEditingPlace(null);
     };
 
@@ -120,7 +132,6 @@ const ParkingSpaces = () => {
         if (e.key === 'Escape') {
             handleCancel();
         }
-        // Не добавляем обработку Enter для сохранения, чтобы сохранение было только по кнопке
     };
 
     const TableSection: React.FC<TableSectionProps> = ({

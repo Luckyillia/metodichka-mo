@@ -40,8 +40,8 @@ export async function middleware(request: NextRequest) {
         return NextResponse.next()
     }
 
-    // Защищаем все API маршруты кроме login
-    if (path.startsWith('/api/') && !path.startsWith('/api/auth/login')) {
+    // Защищаем все API маршруты кроме login и action-logs-internal
+    if (path.startsWith('/api/') && !path.startsWith('/api/auth/login') && !path.includes('/api/action-logs-internal')) {
         const authHeader = request.headers.get('authorization')
 
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -119,7 +119,7 @@ export async function middleware(request: NextRequest) {
         }
 
         // Проверяем права для просмотра логов
-        if (path.startsWith('/api/action-logs') && !path.includes('action-logs-internal')) {
+        if (path.startsWith('/api/action-logs')) {
             if (user.role !== 'root' && user.role !== 'admin') {
                 console.log('[Middleware] Insufficient permissions for action-logs API')
 
@@ -151,8 +151,10 @@ export async function middleware(request: NextRequest) {
         }
 
         // Проверяем права для редактирования парковочных мест
-        if (path.startsWith('/api/parking-spaces') && request.method === 'PUT') {
-            // Только root, admin, ld и cc (LD) могут редактировать
+        if (path === '/api/parking-spaces' && request.method === 'PUT') {
+            console.log('[Middleware] Checking parking edit permissions for user:', user.game_nick, 'role:', user.role)
+
+            // Только root, admin, ld и cc могут редактировать
             if (!['root', 'admin', 'ld', 'cc'].includes(user.role)) {
                 console.log('[Middleware] Insufficient permissions for parking spaces edit')
 
@@ -181,20 +183,22 @@ export async function middleware(request: NextRequest) {
 
                 return NextResponse.json({ error: 'Недостаточно прав для редактирования' }, { status: 403 })
             }
+
+            console.log('[Middleware] User has parking edit permissions, allowing request')
         }
 
         // Добавляем информацию о пользователе в заголовки
-        const headers = new Headers(request.headers)
-        headers.set('x-user-id', user.id)
-        headers.set('x-user-role', user.role)
-        headers.set('x-user-username', user.username)
-        headers.set('x-user-game-nick', user.game_nick)
+        const requestHeaders = new Headers(request.headers)
+        requestHeaders.set('x-user-id', user.id)
+        requestHeaders.set('x-user-role', user.role)
+        requestHeaders.set('x-user-username', user.username)
+        requestHeaders.set('x-user-game-nick', user.game_nick)
 
-        console.log('[Middleware] User authenticated:', user.username, 'Role:', user.role, 'Path:', path)
+        console.log('[Middleware] User authenticated:', user.username, 'Role:', user.role, 'Forwarding to:', path)
 
         return NextResponse.next({
             request: {
-                headers
+                headers: requestHeaders,
             }
         })
     }
@@ -202,11 +206,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
 }
 
+// КРИТИЧЕСКИ ВАЖНО: Правильный matcher!
+// Должен перехватывать ВСЕ методы для /api/parking-spaces
 export const config = {
     matcher: [
         '/api/users/:path*',
-        '/api/action-logs',
         '/api/action-logs/:path*',
-        '/api/parking-spaces',
+        '/api/parking-spaces',  // Это перехватит все методы: GET, PUT, POST, DELETE
     ]
 }

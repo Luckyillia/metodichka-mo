@@ -1,4 +1,4 @@
-// lib/auth/auth-service.ts
+// lib/auth/auth-service.ts - ПОЛНОСТЬЮ ИСПРАВЛЕННАЯ ВЕРСИЯ
 import type { User, ActionLog } from "./types"
 import CryptoJS from "crypto-js"
 import { ENCRYPTION_KEY, AUTH_STORAGE_KEY, SESSION_DURATION } from "./constants"
@@ -173,7 +173,6 @@ export class AuthService {
       "ammunition-supplies",
     ]
 
-    // cc и ld имеют одинаковые права на данный момент
     const ccLdSections = [...publicSections, "goss-wave", "announcements", "forum-responses", "report-generator"]
     const privilegedSections = [...ccLdSections, "user-management", "action-log"]
 
@@ -260,7 +259,8 @@ export class AuthService {
     }
   }
 
-  // Новые методы для работы с пользователями
+  // ===== ИСПРАВЛЕННЫЕ МЕТОДЫ ДЛЯ РАБОТЫ С ПОЛЬЗОВАТЕЛЯМИ =====
+
   static async getUsers(): Promise<User[]> {
     try {
       const response = await this.fetchWithAuth("/api/users")
@@ -284,12 +284,13 @@ export class AuthService {
         body: JSON.stringify({ username, gameNick, password, role }),
       })
 
+      const data = await response.json()
+
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || "Failed to create user")
+        throw new Error(data.error || "Failed to create user")
       }
 
-      return await response.json()
+      return data
     } catch (error) {
       console.error("[AuthService] Error creating user:", error)
       throw error
@@ -304,12 +305,13 @@ export class AuthService {
         body: JSON.stringify({ userId, username, gameNick, password }),
       })
 
+      const data = await response.json()
+
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || "Failed to update user")
+        throw new Error(data.error || "Failed to update user")
       }
 
-      return await response.json()
+      return data
     } catch (error) {
       console.error("[AuthService] Error updating user:", error)
       throw error
@@ -324,12 +326,13 @@ export class AuthService {
         body: JSON.stringify({ userId, role }),
       })
 
+      const data = await response.json()
+
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || "Failed to update role")
+        throw new Error(data.error || "Failed to update role")
       }
 
-      return await response.json()
+      return data
     } catch (error) {
       console.error("[AuthService] Error updating role:", error)
       throw error
@@ -343,8 +346,14 @@ export class AuthService {
       })
 
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || "Failed to deactivate user")
+        let errorMessage = "Failed to deactivate user"
+        try {
+          const data = await response.json()
+          errorMessage = data.error || errorMessage
+        } catch {
+          // Response might be empty
+        }
+        throw new Error(errorMessage)
       }
     } catch (error) {
       console.error("[AuthService] Error deactivating user:", error)
@@ -360,12 +369,13 @@ export class AuthService {
         body: JSON.stringify({ userId, action: "restore" }),
       })
 
+      const data = await response.json()
+
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || "Failed to restore user")
+        throw new Error(data.error || "Failed to restore user")
       }
 
-      return await response.json()
+      return data
     } catch (error) {
       console.error("[AuthService] Error restoring user:", error)
       throw error
@@ -380,28 +390,33 @@ export class AuthService {
         body: JSON.stringify({ logId }),
       })
 
+      const data = await response.json()
+
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || "Failed to undo action")
+        throw new Error(data.error || "Failed to undo action")
       }
 
-      return await response.json()
+      return data
     } catch (error) {
       console.error("[AuthService] Error undoing action:", error)
       throw error
     }
   }
 
-  // Методы для работы с парковочными местами
+  // ===== ИСПРАВЛЕННЫЕ МЕТОДЫ ДЛЯ РАБОТЫ С ПАРКОВОЧНЫМИ МЕСТАМИ =====
+
   static async getParkingSpaces(): Promise<any[]> {
     try {
+      console.log('[AuthService] Fetching parking spaces...')
       const response = await this.fetchWithAuth("/api/parking-spaces")
 
+      const data = await response.json()
+      console.log('[AuthService] Parking spaces response:', data)
+
       if (!response.ok) {
-        throw new Error("Failed to fetch parking spaces")
+        throw new Error(data.error || "Failed to fetch parking spaces")
       }
 
-      const data = await response.json()
       return data.spaces || []
     } catch (error) {
       console.error("[AuthService] Error fetching parking spaces:", error)
@@ -416,18 +431,25 @@ export class AuthService {
       license: string
   ): Promise<any> {
     try {
+      console.log('[AuthService] Updating parking space:', { place, person, car, license })
+
       const response = await this.fetchWithAuth("/api/parking-spaces", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ place, person, car, license }),
       })
 
+      console.log('[AuthService] Response status:', response.status, response.statusText)
+
+      // Читаем response только ОДИН раз
+      const data = await response.json()
+      console.log('[AuthService] Response data:', data)
+
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || "Failed to update parking space")
+        throw new Error(data.error || "Failed to update parking space")
       }
 
-      return await response.json()
+      return data
     } catch (error) {
       console.error("[AuthService] Error updating parking space:", error)
       throw error
