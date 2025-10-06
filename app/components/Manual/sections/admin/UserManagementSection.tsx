@@ -18,9 +18,9 @@ import {
   RotateCcw,
   Eye,
   EyeOff,
-  Undo2,
   UserCog,
   Users,
+  UserStar,
   Gamepad2
 } from "lucide-react"
 
@@ -338,14 +338,25 @@ export default function UserManagementSection() {
             </div>
             <div className="text-3xl font-semibold text-white">{inactiveUsers.length}</div>
           </div>
-
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="bg-slate-900/50 border border-slate-700 rounded-lg p-4">
             <div className="flex items-center gap-3 mb-2">
               <Shield className="w-5 h-5 text-red-400"/>
               <span className="text-sm text-slate-300">Администраторы</span>
             </div>
             <div className="text-3xl font-semibold text-white">
-              {users.filter((u) => u.role === "admin" || u.role === "root").length}
+              {users.filter((u) => (  u.role === "admin" || u.role === "root")  && u.active).length}
+            </div>
+          </div>
+
+          <div className="bg-slate-900/50 border border-slate-700 rounded-lg p-4">
+            <div className="flex items-center gap-3 mb-2">
+              <UserStar className="w-5 h-5 text-pink-400"/>
+              <span className="text-sm text-slate-300">Лидеры</span>
+            </div>
+            <div className="text-3xl font-semibold text-white">
+              {users.filter((u) => u.role === "ld" && u.active).length}
             </div>
           </div>
 
@@ -354,7 +365,7 @@ export default function UserManagementSection() {
               <UserCog className="w-5 h-5 text-blue-400"/>
               <span className="text-sm text-slate-300">CC аккаунты</span>
             </div>
-            <div className="text-3xl font-semibold text-white">{users.filter((u) => u.role === "cc").length}</div>
+            <div className="text-3xl font-semibold text-white">{users.filter((u) => u.role === "cc" && u.active).length}</div>
           </div>
 
           <div className="bg-slate-900/50 border border-slate-700 rounded-lg p-4">
@@ -362,7 +373,7 @@ export default function UserManagementSection() {
               <Users className="w-5 h-5 text-green-400"/>
               <span className="text-sm text-slate-300">Обычные пользователи</span>
             </div>
-            <div className="text-3xl font-semibold text-white">{users.filter((u) => u.role === "user").length}</div>
+            <div className="text-3xl font-semibold text-white">{users.filter((u) => u.role === "user" && u.active).length}</div>
           </div>
         </div>
 

@@ -4,25 +4,6 @@ import type { NextRequest } from 'next/server'
 import CryptoJS from 'crypto-js'
 import { ENCRYPTION_KEY, SESSION_DURATION } from './lib/auth/constants'
 
-function getUserFromHeaders(request: Request) {
-    const userId = request.headers.get("x-user-id")
-    const role = request.headers.get("x-user-role")
-    const username = request.headers.get("x-user-username")
-    const gameNick = request.headers.get("x-user-game-nick")
-
-    if (!userId || !role || !username || !gameNick) {
-        console.log('[Middleware] Missing user headers:', { userId, role, username, gameNick })
-        return null
-    }
-
-    return {
-        id: userId,
-        role: role as "root" | "admin" | "ld" | "cc" | "user",
-        username: username,
-        game_nick: gameNick,
-    }
-}
-
 function verifyAuthToken(token: string): any {
     try {
         const decodedStr = Buffer.from(token, 'base64').toString()
@@ -72,20 +53,16 @@ export async function middleware(request: NextRequest) {
 
         // Проверяем права для управления пользователями
         if (path.startsWith('/api/users')) {
-            // Только root и admin могут работать с пользователями
             if (user.role !== 'root' && user.role !== 'admin') {
                 console.log('[Middleware] Insufficient permissions for users API')
 
-                // Логируем попытку несанкционированного доступа
                 try {
                     const ip_address = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip")
                     const user_agent = request.headers.get("user-agent")
 
                     await fetch(`${request.nextUrl.origin}/api/action-logs-internal`, {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             user_id: user.id,
                             game_nick: user.game_nick,
@@ -93,12 +70,7 @@ export async function middleware(request: NextRequest) {
                             action_type: 'other',
                             target_type: 'system',
                             details: `Отказано в доступе к ${path} (роль: ${user.role})`,
-                            metadata: {
-                                path,
-                                method: request.method,
-                                role: user.role,
-                                reason: 'insufficient_permissions',
-                            },
+                            metadata: { path, method: request.method, role: user.role, reason: 'insufficient_permissions' },
                             ip_address,
                             user_agent,
                         })
@@ -110,19 +82,15 @@ export async function middleware(request: NextRequest) {
                 return NextResponse.json({ error: 'Недостаточно прав' }, { status: 403 })
             }
 
-            // Для операций изменения/удаления проверяем дополнительно
             if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method)) {
                 if (user.role !== 'root' && user.role !== 'admin') {
-                    // Логируем попытку изменения данных без прав
                     try {
                         const ip_address = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip")
                         const user_agent = request.headers.get("user-agent")
 
                         await fetch(`${request.nextUrl.origin}/api/action-logs-internal`, {
                             method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
+                            headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
                                 user_id: user.id,
                                 game_nick: user.game_nick,
@@ -130,12 +98,7 @@ export async function middleware(request: NextRequest) {
                                 action_type: 'other',
                                 target_type: 'system',
                                 details: `Отказано в ${request.method} запросе к ${path} (роль: ${user.role})`,
-                                metadata: {
-                                    path,
-                                    method: request.method,
-                                    role: user.role,
-                                    reason: 'insufficient_permissions_for_operation',
-                                },
+                                metadata: { path, method: request.method, role: user.role, reason: 'insufficient_permissions_for_operation' },
                                 ip_address,
                                 user_agent,
                             })
@@ -151,20 +114,16 @@ export async function middleware(request: NextRequest) {
 
         // Проверяем права для просмотра логов
         if (path.startsWith('/api/action-logs') && !path.includes('action-logs-internal')) {
-            // Только root и admin могут просматривать логи
             if (user.role !== 'root' && user.role !== 'admin') {
                 console.log('[Middleware] Insufficient permissions for action-logs API')
 
-                // Логируем попытку доступа к логам
                 try {
                     const ip_address = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip")
                     const user_agent = request.headers.get("user-agent")
 
                     await fetch(`${request.nextUrl.origin}/api/action-logs-internal`, {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             user_id: user.id,
                             game_nick: user.game_nick,
@@ -172,12 +131,7 @@ export async function middleware(request: NextRequest) {
                             action_type: 'other',
                             target_type: 'system',
                             details: `Отказано в доступе к логам (роль: ${user.role})`,
-                            metadata: {
-                                path,
-                                method: request.method,
-                                role: user.role,
-                                reason: 'insufficient_permissions_logs',
-                            },
+                            metadata: { path, method: request.method, role: user.role, reason: 'insufficient_permissions_logs' },
                             ip_address,
                             user_agent,
                         })
@@ -187,6 +141,39 @@ export async function middleware(request: NextRequest) {
                 }
 
                 return NextResponse.json({ error: 'Недостаточно прав' }, { status: 403 })
+            }
+        }
+
+        // Проверяем права для редактирования парковочных мест
+        if (path.startsWith('/api/parking-spaces') && request.method === 'PUT') {
+            // Только root, admin и cc (LD) могут редактировать
+            if (!['root', 'admin', 'cc'].includes(user.role)) {
+                console.log('[Middleware] Insufficient permissions for parking spaces edit')
+
+                try {
+                    const ip_address = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip")
+                    const user_agent = request.headers.get("user-agent")
+
+                    await fetch(`${request.nextUrl.origin}/api/action-logs-internal`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            user_id: user.id,
+                            game_nick: user.game_nick,
+                            action: `Попытка редактирования парковочных мест`,
+                            action_type: 'other',
+                            target_type: 'system',
+                            details: `Отказано в редактировании парковки (роль: ${user.role})`,
+                            metadata: { path, method: request.method, role: user.role, reason: 'insufficient_permissions_parking' },
+                            ip_address,
+                            user_agent,
+                        })
+                    })
+                } catch (logError) {
+                    console.error('[Middleware] Failed to log parking edit denied:', logError)
+                }
+
+                return NextResponse.json({ error: 'Недостаточно прав для редактирования' }, { status: 403 })
             }
         }
 
@@ -214,5 +201,6 @@ export const config = {
         '/api/users/:path*',
         '/api/action-logs',
         '/api/action-logs/:path*',
+        '/api/parking-spaces',
     ]
 }
