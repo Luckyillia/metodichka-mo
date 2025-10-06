@@ -66,16 +66,22 @@ export default function ActionLogSection() {
             day: "2-digit",
             month: "2-digit",
             year: "numeric",
-            hour: "2-digit",
             minute: "2-digit",
             second: "2-digit",
         }).format(date)
     }
 
     const canUndo = (log: ActionLog) => {
+        // Root может отменять действия всех пользователей
+        if (user?.role === "root") {
+            if (log.undone) return false
+            // Исключаем действия входа/выхода, которые отменять не имеет смысла
+            return ["deactivate", "restore", "role_change", "update", "create", "delete"].includes(log.action_type)
+        }
+        // Обычные пользователи могут отменять только свои действия
         if (log.user_id !== user?.id) return false
         if (log.undone) return false
-        return ["deactivate", "role_change", "update"].includes(log.action_type)
+        return ["deactivate", "restore", "role_change", "update"].includes(log.action_type)
     }
 
     const getActionTypeColor = (type: string) => {

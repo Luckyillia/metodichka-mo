@@ -44,14 +44,13 @@ export async function POST(request: Request) {
             .select("*")
             .eq("id", logId)
             .single()
-
         if (logFetchError || !logEntry) {
             console.error("[Undo API] Log entry not found:", logId)
-            return NextResponse.json({ error: "Запись в логе не найдена" }, { status: 404 })
+            return NextResponse.json({ error: "Запись в логге не найдена" }, { status: 404 })
         }
 
-        // Проверка: пользователь может отменять только свои действия
-        if (logEntry.user_id !== currentUser.id) {
+        // Проверка: root может отменять действия всех пользователей, остальные - только свои
+        if (currentUser.role !== "root" && logEntry.user_id !== currentUser.id) {
             console.log("[Undo API] Permission denied: user trying to undo another user's action")
             return NextResponse.json(
                 { error: "Вы можете отменять только свои действия" },
@@ -71,7 +70,7 @@ export async function POST(request: Request) {
         const undoableActions = ["deactivate", "restore", "role_change", "update"]
         if (!undoableActions.includes(logEntry.action_type)) {
             return NextResponse.json(
-                { error: "Этот тип действия не может быть отменен" },
+                { error: "Этот тип действия не может быть отменен (вход/выход отменять не имеет смысла)" },
                 { status: 400 }
             )
         }

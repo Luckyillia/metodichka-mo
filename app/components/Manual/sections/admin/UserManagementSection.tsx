@@ -291,6 +291,13 @@ export default function UserManagementSection() {
   }
 
   const canUndo = (log: ActionLog) => {
+    // Root может отменять действия всех пользователей
+    if (currentUser?.role === "root") {
+      if (log.undone) return false
+      // Исключаем действия входа/выхода, которые отменять не имеет смысла
+      return ["deactivate", "restore", "role_change", "update", "create", "delete"].includes(log.action_type)
+    }
+    // Обычные пользователи могут отменять только свои действия
     if (log.user_id !== currentUser?.id) return false
     if (log.undone) return false
     return ["deactivate", "restore", "role_change", "update"].includes(log.action_type)
