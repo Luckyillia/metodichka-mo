@@ -4,6 +4,25 @@ import type { NextRequest } from 'next/server'
 import CryptoJS from 'crypto-js'
 import { ENCRYPTION_KEY, SESSION_DURATION } from './lib/auth/constants'
 
+function getUserFromHeaders(request: Request) {
+    const userId = request.headers.get("x-user-id")
+    const role = request.headers.get("x-user-role")
+    const username = request.headers.get("x-user-username")
+    const gameNick = request.headers.get("x-user-game-nick")
+
+    if (!userId || !role || !username || !gameNick) {
+        console.log('[Middleware] Missing user headers:', { userId, role, username, gameNick })
+        return null
+    }
+
+    return {
+        id: userId,
+        role: role as "root" | "admin" | "ld" | "cc" | "user",
+        username: username,
+        game_nick: gameNick,
+    }
+}
+
 function verifyAuthToken(token: string): any {
     try {
         const decodedStr = Buffer.from(token, 'base64').toString()

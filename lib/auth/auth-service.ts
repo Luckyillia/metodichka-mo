@@ -173,8 +173,9 @@ export class AuthService {
       "ammunition-supplies",
     ]
 
-    const ccSections = [...publicSections, "goss-wave", "announcements", "forum-responses", "report-generator"]
-    const privilegedSections = [...ccSections, "user-management", "action-log"]
+    // cc и ld имеют одинаковые права на данный момент
+    const ccLdSections = [...publicSections, "goss-wave", "announcements", "forum-responses", "report-generator"]
+    const privilegedSections = [...ccLdSections, "user-management", "action-log"]
 
     if (!user) {
       return publicSections.includes(sectionId)
@@ -184,8 +185,9 @@ export class AuthService {
       case "root":
       case "admin":
         return privilegedSections.includes(sectionId)
+      case "ld":
       case "cc":
-        return ccSections.includes(sectionId)
+        return ccLdSections.includes(sectionId)
       case "user":
         return publicSections.includes(sectionId)
       default:

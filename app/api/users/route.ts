@@ -16,7 +16,7 @@ function getUserFromHeaders(request: Request) {
 
   return {
     id: userId,
-    role: role as "root" | "admin" | "cc" | "user",
+    role: role as "root" | "admin" | "ld" | "cc" | "user",
     username: username,
     game_nick: gameNick,
   }
@@ -80,7 +80,7 @@ export async function POST(request: Request) {
 
     if (currentUser.role === "admin" && (role === "admin" || role === "root")) {
       return NextResponse.json(
-          { error: "Администраторы могут создавать только пользователей с ролями 'user' и 'cc'" },
+          { error: "Администраторы могут создавать только пользователей с ролями 'user', 'cc' и 'ld'" },
           { status: 403 }
       )
     }
@@ -442,7 +442,7 @@ export async function PATCH(request: Request) {
 
       if (role === "admin" || role === "root") {
         return NextResponse.json(
-            { error: "Администраторы могут назначать только роли 'user' и 'cc'" },
+            { error: "Администраторы могут назначать только роли 'user', 'cc' и 'ld'" },
             { status: 403 }
         )
       }

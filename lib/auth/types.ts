@@ -1,11 +1,10 @@
-// lib/auth/types.ts
-export type UserRole = "guest" | "user" | "cc" | "admin" | "root"
+export type UserRole = "guest" | "user" | "cc" | "ld" | "admin" | "root"
 
 export interface User {
   id: string
   username: string
   game_nick: string
-  role: "root" | "admin" | "cc" | "user"
+  role: "root" | "admin" | "cc" | "ld" | "user"
   active: boolean
   created_at: string
 }

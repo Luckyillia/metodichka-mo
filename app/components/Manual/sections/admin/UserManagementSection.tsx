@@ -50,7 +50,7 @@ export default function UserManagementSection() {
     username: "",
     gameNick: "",
     password: "",
-    role: "" as "root" | "admin" | "cc" | "user",
+    role: "" as "root" | "admin" | "ld" |"cc" | "user",
   })
 
   useEffect(() => {
@@ -247,6 +247,8 @@ export default function UserManagementSection() {
         return "bg-purple-600 text-white"
       case "admin":
         return "bg-red-600 text-white"
+      case "ld":
+        return "bg-pink-600 text-white"
       case "cc":
         return "bg-blue-600 text-white"
       case "user":
@@ -262,6 +264,8 @@ export default function UserManagementSection() {
         return "Суперадмин"
       case "admin":
         return "Администратор"
+      case "ld":
+        return "Лидер"
       case "cc":
         return "CC"
       case "user":
@@ -624,6 +628,7 @@ export default function UserManagementSection() {
                     >
                       <option value="user">Пользователь</option>
                       <option value="cc">CC</option>
+                      <option value="ld">Лидер</option>
                       {currentUser?.role === "root" && (
                           <>
                             <option value="admin">Администратор</option>
@@ -787,6 +792,7 @@ export default function UserManagementSection() {
                     >
                       <option value="user">Пользователь</option>
                       <option value="cc">CC</option>
+                      <option value="ld">Лидер</option>
                       {currentUser?.role === "root" && (
                           <>
                             <option value="admin">Администратор</option>

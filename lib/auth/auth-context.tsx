@@ -58,7 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const logout = () => {
-    if (state.user && (state.user.role === "admin" || state.user.role === "root")) {
+    if (state.user && (state.user.role === "admin" || state.user.role === "root" || state.user.role === "ld")) {
       AuthService.logAction(
           state.user.id,
           state.user.game_nick,
