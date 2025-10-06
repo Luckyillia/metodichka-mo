@@ -517,18 +517,25 @@ export default function UserManagementSection() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end gap-2">
-                        {user.role !== "root" && user.active && (
+                        {/* Показываем кнопки только для активных пользователей и не для root (кроме случая редактирования себя) */}
+                        {user.active && user.role !== "root" && (
                             <>
-                              <button
-                                  onClick={() => openEditModal(user)}
-                                  className="text-blue-400 hover:text-blue-300 transition-colors"
-                                  title="Редактировать"
-                              >
-                                <Edit className="w-5 h-5"/>
-                              </button>
-
+                              {/* Кнопка редактирования: root видит всех, admin видит только себя и не-админов */}
                               {(currentUser?.role === "root" ||
-                                  (currentUser?.role === "admin" && user.role !== "admin")) && (
+                                  (currentUser?.role === "admin" && (currentUser?.id === user.id || user.role !== "admin"))) && (
+                                  <button
+                                      onClick={() => openEditModal(user)}
+                                      className="text-blue-400 hover:text-blue-300 transition-colors"
+                                      title="Редактировать"
+                                  >
+                                    <Edit className="w-5 h-5"/>
+                                  </button>
+                              )}
+
+                              {/* Кнопка изменения роли: только root или admin для не-админов, но не для себя */}
+                              {(currentUser?.role === "root" ||
+                                  (currentUser?.role === "admin" && user.role !== "admin")) &&
+                                  currentUser?.id !== user.id && (
                                   <button
                                       onClick={() => openRoleModal(user)}
                                       className="text-purple-400 hover:text-purple-300 transition-colors"
@@ -538,8 +545,10 @@ export default function UserManagementSection() {
                                   </button>
                               )}
 
+                              {/* Кнопка деактивации: только root или admin для не-админов, но не для себя */}
                               {(currentUser?.role === "root" ||
-                                  (currentUser?.role === "admin" && user.role !== "admin")) && (
+                                  (currentUser?.role === "admin" && user.role !== "admin")) &&
+                                  currentUser?.id !== user.id && (
                                   <button
                                       onClick={() => handleDeactivateUser(user.id, user.game_nick)}
                                       className="text-red-400 hover:text-red-300 transition-colors"
@@ -551,6 +560,7 @@ export default function UserManagementSection() {
                             </>
                         )}
 
+                        {/* Восстановление неактивных - только root */}
                         {!user.active && currentUser?.role === "root" && (
                             <button
                                 onClick={() => handleRestoreUser(user.id, user.game_nick)}
