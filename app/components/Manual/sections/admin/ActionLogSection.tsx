@@ -19,7 +19,7 @@ import {
 import {useAuth} from "@/lib/auth/auth-context";
 
 export default function ActionLogSection() {
-    const { user: currentUser } = useAuth()
+    const { user } = useAuth()
     const [logs, setLogs] = useState<ActionLog[]>([])
     const [filteredLogs, setFilteredLogs] = useState<ActionLog[]>([])
     const [total, setTotal] = useState(0)
@@ -73,7 +73,7 @@ export default function ActionLogSection() {
     }
 
     const canUndo = (log: ActionLog) => {
-        if (log.user_id !== currentUser?.id) return false
+        if (log.user_id !== user?.id) return false
         if (log.undone) return false
         return ["deactivate", "role_change", "update"].includes(log.action_type)
     }
@@ -213,14 +213,14 @@ export default function ActionLogSection() {
                         </div>
                     )}
 
-                    {log.ip_address && (
+                    {(log.ip_address && user?.role === "root") && (
                         <div>
                             <p className="text-sm text-slate-400 mb-1">IP адрес</p>
                             <p className="text-white font-mono text-sm">{log.ip_address}</p>
                         </div>
                     )}
 
-                    {log.user_agent && (
+                    {(log.user_agent && user?.role === "root") && (
                         <div>
                             <p className="text-sm text-slate-400 mb-1">User Agent</p>
                             <p className="text-slate-300 text-xs break-all">{log.user_agent}</p>
