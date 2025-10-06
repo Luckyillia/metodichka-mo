@@ -1,5 +1,6 @@
 import type React from "react"
 import { Analytics } from "@vercel/analytics/next"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Inter, Playfair_Display } from "next/font/google"
 import "./styles/globals.css"
 import { Suspense } from "react"
@@ -21,6 +22,7 @@ export default function RootLayout({
         <AuthProvider>
           {children}
           <Analytics />
+            <SpeedInsights />
         </AuthProvider>
       </Suspense>
       </body>
