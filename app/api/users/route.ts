@@ -213,11 +213,12 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: "Пользователь не найден" }, { status: 404 })
     }
 
-    if (existingUser.role === "root") {
+    if (existingUser.role === "root" && currentUser.id !== userId) {
       return NextResponse.json({ error: "Нельзя редактировать root пользователя" }, { status: 403 })
     }
 
-    if (currentUser.role === "admin" && existingUser.role === "admin") {
+    // Администратор может редактировать свой профиль, но не других администраторов
+    if (currentUser.role === "admin" && existingUser.role === "admin" && currentUser.id !== userId) {
       return NextResponse.json(
           { error: "Администраторы не могут редактировать других администраторов" },
           { status: 403 }
@@ -432,6 +433,14 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: "Нельзя изменить роль root пользователя" }, { status: 403 })
     }
 
+    // Нельзя менять свою собственную роль
+    if (currentUser.id === userId) {
+      return NextResponse.json(
+          { error: "Нельзя изменить свою собственную роль" },
+          { status: 403 }
+      )
+    }
+
     if (currentUser.role === "admin") {
       if (existingUser.role === "admin") {
         return NextResponse.json(
@@ -523,6 +532,14 @@ export async function DELETE(request: Request) {
 
     if (existingUser.role === "root") {
       return NextResponse.json({ error: "Нельзя деактивировать root пользователя" }, { status: 403 })
+    }
+
+    // Нельзя деактивировать самого себя
+    if (currentUser.id === userId) {
+      return NextResponse.json(
+          { error: "Нельзя деактивировать самого себя" },
+          { status: 403 }
+      )
     }
 
     if (currentUser.role === "admin" && existingUser.role === "admin") {
