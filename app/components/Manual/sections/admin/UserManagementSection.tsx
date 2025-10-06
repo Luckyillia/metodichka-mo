@@ -37,6 +37,14 @@ export default function UserManagementSection() {
   const [changingRoleUser, setChangingRoleUser] = useState<User | null>(null)
   const [recentActions, setRecentActions] = useState<ActionLog[]>([])
   const [loadingActions, setLoadingActions] = useState(false)
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean
+    title: string
+    message: string
+    onConfirm: () => void
+    confirmText?: string
+    type?: 'danger' | 'warning' | 'info'
+  }>({ isOpen: false, title: '', message: '', onConfirm: () => {}, type: 'warning' })
 
   const [formData, setFormData] = useState({
     username: "",
@@ -184,39 +192,51 @@ export default function UserManagementSection() {
   }
 
   const handleDeactivateUser = async (userId: string, gameNick: string) => {
-    if (!confirm(`Вы уверены, что хотите деактивировать пользователя ${gameNick}?`)) {
-      return
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: 'Деактивация пользователя',
+      message: `Вы уверены, что хотите деактивировать пользователя ${gameNick}?`,
+      type: 'danger',
+      confirmText: 'Деактивировать',
+      onConfirm: async () => {
+        setConfirmModal({ ...confirmModal, isOpen: false })
+        setError("")
+        setSuccess("")
 
-    setError("")
-    setSuccess("")
-
-    try {
-      await AuthService.deactivateUser(userId)
-      setSuccess(`Пользователь ${gameNick} деактивирован`)
-      fetchUsers()
-      fetchRecentActions()
-    } catch (err: any) {
-      setError(err.message || "Не удалось деактивировать пользователя")
-    }
+        try {
+          await AuthService.deactivateUser(userId)
+          setSuccess(`Пользователь ${gameNick} деактивирован`)
+          fetchUsers()
+          fetchRecentActions()
+        } catch (err: any) {
+          setError(err.message || "Не удалось деактивировать пользователя")
+        }
+      }
+    })
   }
 
   const handleRestoreUser = async (userId: string, gameNick: string) => {
-    if (!confirm(`Вы уверены, что хотите восстановить пользователя ${gameNick}?`)) {
-      return
-    }
+    setConfirmModal({
+      isOpen: true,
+      title: 'Восстановление пользователя',
+      message: `Вы уверены, что хотите восстановить пользователя ${gameNick}?`,
+      type: 'info',
+      confirmText: 'Восстановить',
+      onConfirm: async () => {
+        setConfirmModal({ ...confirmModal, isOpen: false })
+        setError("")
+        setSuccess("")
 
-    setError("")
-    setSuccess("")
-
-    try {
-      await AuthService.restoreUser(userId)
-      setSuccess(`Пользователь ${gameNick} восстановлен`)
-      fetchUsers()
-      fetchRecentActions()
-    } catch (err: any) {
-      setError(err.message || "Не удалось восстановить пользователя")
-    }
+        try {
+          await AuthService.restoreUser(userId)
+          setSuccess(`Пользователь ${gameNick} восстановлен`)
+          fetchUsers()
+          fetchRecentActions()
+        } catch (err: any) {
+          setError(err.message || "Не удалось восстановить пользователя")
+        }
+      }
+    })
   }
 
   const openEditModal = (u: User) => {
@@ -853,6 +873,56 @@ export default function UserManagementSection() {
               </div>
             </div>
         )}
+
+      {/* Модальное окно подтверждения */}
+      {confirmModal.isOpen && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+            <div className="bg-slate-800 rounded-xl shadow-2xl max-w-md w-full border border-slate-700 animate-in fade-in zoom-in duration-200">
+              <div className="p-6">
+                <div className="flex items-start gap-4 mb-6">
+                  <div className={`p-3 rounded-full ${
+                      confirmModal.type === 'danger' ? 'bg-red-600/20' :
+                          confirmModal.type === 'info' ? 'bg-blue-600/20' : 'bg-yellow-600/20'
+                  }`}>
+                    <AlertCircle className={`w-6 h-6 ${
+                        confirmModal.type === 'danger' ? 'text-red-500' :
+                            confirmModal.type === 'info' ? 'text-blue-500' : 'text-yellow-500'
+                    }`} />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-semibold text-white mb-2">
+                      {confirmModal.title}
+                    </h3>
+                    <p className="text-slate-300 text-sm">
+                      {confirmModal.message}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                      onClick={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                      className="flex-1 px-4 py-2.5 bg-slate-700 text-slate-200 rounded-lg hover:bg-slate-600 transition-colors font-medium"
+                  >
+                    Отмена
+                  </button>
+                  <button
+                      onClick={confirmModal.onConfirm}
+                      className={`flex-1 px-4 py-2.5 rounded-lg transition-colors font-medium ${
+                          confirmModal.type === 'danger' 
+                              ? 'bg-red-600 hover:bg-red-700 text-white' :
+                              confirmModal.type === 'info'
+                                  ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                                  : 'bg-yellow-600 hover:bg-yellow-700 text-white'
+                      }`}
+                  >
+                    {confirmModal.confirmText || 'Подтвердить'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+      )}
       </div>
   )
 }

@@ -30,6 +30,12 @@ export default function ActionLogSection() {
     const [selectedActionType, setSelectedActionType] = useState<string>("all")
     const [selectedTargetType, setSelectedTargetType] = useState<string>("all")
     const [selectedLog, setSelectedLog] = useState<ActionLog | null>(null)
+    const [confirmModal, setConfirmModal] = useState<{
+        isOpen: boolean
+        title: string
+        message: string
+        onConfirm: () => void
+    }>({ isOpen: false, title: '', message: '', onConfirm: () => {} })
 
     const logsPerPage = 5
 
@@ -128,20 +134,24 @@ export default function ActionLogSection() {
     const totalPages = Math.ceil(total / logsPerPage)
 
     const handleUndoAction = async (logId: string) => {
-        if (!confirm("Вы уверены, что хотите отменить это действие?")) {
-            return
-        }
+        setConfirmModal({
+            isOpen: true,
+            title: 'Отмена действия',
+            message: 'Вы уверены, что хотите отменить это действие?',
+            onConfirm: async () => {
+                setConfirmModal({ ...confirmModal, isOpen: false })
+                setError("")
+                setSuccess("")
 
-        setError("")
-        setSuccess("")
-
-        try {
-            const result = await AuthService.undoAction(logId)
-            setSuccess(result.message)
-            loadLogs()
-        } catch (err: any) {
-            setError(err.message || "Не удалось отменить действие")
-        }
+                try {
+                    const result = await AuthService.undoAction(logId)
+                    setSuccess(result.message)
+                    loadLogs()
+                } catch (err: any) {
+                    setError(err.message || "Не удалось отменить действие")
+                }
+            }
+        })
     }
 
     const handlePreviousPage = () => {
@@ -462,6 +472,44 @@ export default function ActionLogSection() {
             </div>
 
             {selectedLog && <DetailModal log={selectedLog} onClose={() => setSelectedLog(null)} />}
+
+            {/* Модальное окно подтверждения */}
+            {confirmModal.isOpen && (
+                <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+                    <div className="bg-slate-800 rounded-xl shadow-2xl max-w-md w-full border border-slate-700 animate-in fade-in zoom-in duration-200">
+                        <div className="p-6">
+                            <div className="flex items-start gap-4 mb-6">
+                                <div className="p-3 rounded-full bg-yellow-600/20">
+                                    <AlertCircle className="w-6 h-6 text-yellow-500" />
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="text-xl font-semibold text-white mb-2">
+                                        {confirmModal.title}
+                                    </h3>
+                                    <p className="text-slate-300 text-sm">
+                                        {confirmModal.message}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                                    className="flex-1 px-4 py-2.5 bg-slate-700 text-slate-200 rounded-lg hover:bg-slate-600 transition-colors font-medium"
+                                >
+                                    Отмена
+                                </button>
+                                <button
+                                    onClick={confirmModal.onConfirm}
+                                    className="flex-1 px-4 py-2.5 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition-colors font-medium"
+                                >
+                                    Отменить действие
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
