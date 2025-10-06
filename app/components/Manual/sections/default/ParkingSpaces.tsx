@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Edit2, Save, X, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { useAuth } from '@/lib/auth/auth-context';
 import { AuthService } from '@/lib/auth/auth-service';
@@ -21,12 +21,13 @@ interface TableSectionProps {
     headerClass: string;
     canEdit: boolean;
     onEdit: (place: number) => void;
-    onSave: (place: number, data: Partial<ParkingData>) => void;
+    onSave: (place: number) => void;
     onCancel: (place: number) => void;
     editingPlace: number | null;
-    editData: Partial<ParkingData> | null;
-    setEditData: (data: Partial<ParkingData>) => void;
     isSaving: boolean;
+    personRef: React.RefObject<HTMLInputElement>;
+    carRef: React.RefObject<HTMLInputElement>;
+    licenseRef: React.RefObject<HTMLInputElement>;
 }
 
 const ParkingSpaces = () => {
@@ -34,16 +35,18 @@ const ParkingSpaces = () => {
     const [parkingData, setParkingData] = useState<ParkingData[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [editingPlace, setEditingPlace] = useState<number | null>(null);
-    const [editData, setEditData] = useState<Partial<ParkingData> | null>(null);
     const [isSaving, setIsSaving] = useState(false);
     const [notification, setNotification] = useState<{
         type: 'success' | 'error';
         message: string;
     } | null>(null);
 
-    // Проверка прав на редактирование
-    const canEdit = user && ['root', 'admin', 'cc'].includes(user.role);
+    const personRef = useRef<HTMLInputElement>(null);
+    const carRef = useRef<HTMLInputElement>(null);
+    const licenseRef = useRef<HTMLInputElement>(null);
 
+    // Проверка прав на редактирование
+    const canEdit = user && ['root', 'admin', 'ld'].includes(user.role);
     // Загрузка данных
     useEffect(() => {
         fetchParkingData();
@@ -52,14 +55,8 @@ const ParkingSpaces = () => {
     const fetchParkingData = async () => {
         try {
             setIsLoading(true);
-            const response = await fetch('/api/parking-spaces');
-            const data = await response.json();
-
-            if (response.ok) {
-                setParkingData(data.spaces || []);
-            } else {
-                showNotification('error', 'Не удалось загрузить данные о парковке');
-            }
+            const spaces = await AuthService.getParkingSpaces();
+            setParkingData(spaces);
         } catch (error) {
             console.error('Error fetching parking data:', error);
             showNotification('error', 'Ошибка при загрузке данных');
@@ -74,51 +71,42 @@ const ParkingSpaces = () => {
     };
 
     const handleEdit = (place: number) => {
-        const spaceData = parkingData.find(s => s.place === place);
-        if (spaceData) {
-            setEditingPlace(place);
-            setEditData({
-                person: spaceData.person,
-                car: spaceData.car,
-                license: spaceData.license,
-            });
-        }
+        setEditingPlace(place);
+        // Фокусируемся на первом инпуте после рендера без прокрутки страницы
+        setTimeout(() => {
+            if (personRef.current) {
+                personRef.current.focus({ preventScroll: true });
+            }
+        }, 0);
     };
 
-    const handleSave = async (place: number, data: Partial<ParkingData>) => {
-        if (!data.person || !data.car || !data.license) {
+    const handleSave = async (place: number) => {
+        const person = personRef.current?.value.trim() || '';
+        const car = carRef.current?.value.trim() || '';
+        const license = licenseRef.current?.value.trim() || '';
+
+        if (!person || !car || !license) {
             showNotification('error', 'Все поля должны быть заполнены');
             return;
         }
 
         try {
             setIsSaving(true);
-            const response = await AuthService.fetchWithAuth('/api/parking-spaces', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    place,
-                    person: data.person.trim(),
-                    car: data.car.trim(),
-                    license: data.license.trim(),
-                }),
-            });
+            const updatedSpace = await AuthService.updateParkingSpace(
+                place,
+                person,
+                car,
+                license
+            );
 
-            if (response.ok) {
-                const updatedSpace = await response.json();
-                setParkingData(prev =>
-                    prev.map(s => (s.place === place ? { ...s, ...updatedSpace } : s))
-                );
-                setEditingPlace(null);
-                setEditData(null);
-                showNotification('success', `Место №${place} успешно обновлено`);
-            } else {
-                const error = await response.json();
-                showNotification('error', error.error || 'Ошибка при сохранении');
-            }
-        } catch (error) {
+            setParkingData(prev =>
+                prev.map(s => (s.place === place ? { ...s, person, car, license, ...updatedSpace } : s))
+            );
+            setEditingPlace(null);
+            showNotification('success', `Место №${place} успешно обновлено`);
+        } catch (error: any) {
             console.error('Error saving parking space:', error);
-            showNotification('error', 'Ошибка при сохранении данных');
+            showNotification('error', error.message || 'Ошибка при сохранении данных');
         } finally {
             setIsSaving(false);
         }
@@ -126,15 +114,13 @@ const ParkingSpaces = () => {
 
     const handleCancel = () => {
         setEditingPlace(null);
-        setEditData(null);
     };
 
     const handleKeyPress = (e: React.KeyboardEvent, place: number) => {
-        if (e.key === 'Enter' && editData) {
-            handleSave(place, editData);
-        } else if (e.key === 'Escape') {
+        if (e.key === 'Escape') {
             handleCancel();
         }
+        // Не добавляем обработку Enter для сохранения, чтобы сохранение было только по кнопке
     };
 
     const TableSection: React.FC<TableSectionProps> = ({
@@ -146,9 +132,10 @@ const ParkingSpaces = () => {
                                                            onSave,
                                                            onCancel,
                                                            editingPlace,
-                                                           editData,
-                                                           setEditData,
                                                            isSaving,
+                                                           personRef,
+                                                           carRef,
+                                                           licenseRef,
                                                        }) => (
         <table className="parking-section-table">
             <thead>
@@ -177,15 +164,12 @@ const ParkingSpaces = () => {
                         <td className="parking-person-name">
                             {isEditing ? (
                                 <input
+                                    ref={personRef}
                                     type="text"
-                                    value={editData?.person || ''}
-                                    onChange={(e) =>
-                                        setEditData({ ...editData, person: e.target.value })
-                                    }
+                                    defaultValue={row.person}
                                     onKeyDown={(e) => handleKeyPress(e, row.place)}
                                     className="edit-input"
                                     placeholder="Имя сотрудника"
-                                    autoFocus
                                     disabled={isSaving}
                                 />
                             ) : (
@@ -195,11 +179,9 @@ const ParkingSpaces = () => {
                         <td className="parking-car-model">
                             {isEditing ? (
                                 <input
+                                    ref={carRef}
                                     type="text"
-                                    value={editData?.car || ''}
-                                    onChange={(e) =>
-                                        setEditData({ ...editData, car: e.target.value })
-                                    }
+                                    defaultValue={row.car}
                                     onKeyDown={(e) => handleKeyPress(e, row.place)}
                                     className="edit-input"
                                     placeholder="Модель автомобиля"
@@ -212,11 +194,9 @@ const ParkingSpaces = () => {
                         <td>
                             {isEditing ? (
                                 <input
+                                    ref={licenseRef}
                                     type="text"
-                                    value={editData?.license || ''}
-                                    onChange={(e) =>
-                                        setEditData({ ...editData, license: e.target.value })
-                                    }
+                                    defaultValue={row.license}
                                     onKeyDown={(e) => handleKeyPress(e, row.place)}
                                     className="edit-input"
                                     placeholder="Гос. номер"
@@ -231,7 +211,7 @@ const ParkingSpaces = () => {
                                 {isEditing ? (
                                     <div className="action-buttons">
                                         <button
-                                            onClick={() => onSave(row.place, editData!)}
+                                            onClick={() => onSave(row.place)}
                                             disabled={isSaving}
                                             className="save-btn"
                                             title="Сохранить"
@@ -301,7 +281,7 @@ const ParkingSpaces = () => {
                 <h1>🚗 Распределение парковочных мест</h1>
                 {canEdit && (
                     <p className="edit-hint">
-                        Нажмите на иконку редактирования для изменения данных. Enter - сохранить, Esc - отменить.
+                        Нажмите на иконку редактирования для изменения данных. Используйте кнопки для сохранения или отмены. Esc - отменить.
                     </p>
                 )}
             </div>
@@ -315,9 +295,10 @@ const ParkingSpaces = () => {
                 onSave={handleSave}
                 onCancel={handleCancel}
                 editingPlace={editingPlace}
-                editData={editData}
-                setEditData={setEditData}
                 isSaving={isSaving}
+                personRef={personRef}
+                carRef={carRef}
+                licenseRef={licenseRef}
             />
 
             <TableSection
@@ -329,9 +310,10 @@ const ParkingSpaces = () => {
                 onSave={handleSave}
                 onCancel={handleCancel}
                 editingPlace={editingPlace}
-                editData={editData}
-                setEditData={setEditData}
                 isSaving={isSaving}
+                personRef={personRef}
+                carRef={carRef}
+                licenseRef={licenseRef}
             />
 
             <TableSection
@@ -343,9 +325,10 @@ const ParkingSpaces = () => {
                 onSave={handleSave}
                 onCancel={handleCancel}
                 editingPlace={editingPlace}
-                editData={editData}
-                setEditData={setEditData}
                 isSaving={isSaving}
+                personRef={personRef}
+                carRef={carRef}
+                licenseRef={licenseRef}
             />
         </div>
     );

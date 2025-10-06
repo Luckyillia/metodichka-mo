@@ -59,3 +59,14 @@ export interface UndoActionResponse {
   message: string
   restoredUser?: User
 }
+
+export interface ParkingSpace {
+  id: number;
+  place: number;
+  person: string;
+  car: string;
+  license: string;
+  category: 'commanders' | 'deputies' | 'junior';
+  updated_at?: string;
+  updated_by?: string;
+}

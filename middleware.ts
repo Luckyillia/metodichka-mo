@@ -1,3 +1,4 @@
+// middleware.ts
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import CryptoJS from 'crypto-js'
@@ -32,11 +33,6 @@ function verifyAuthToken(token: string): any {
 
 export async function middleware(request: NextRequest) {
     const path = request.nextUrl.pathname
-
-    // Allow public GET for parking spaces
-    if (path === '/api/parking-spaces' && request.method === 'GET') {
-        return NextResponse.next()
-    }
 
     // Защищаем все API маршруты кроме login
     if (path.startsWith('/api/') && !path.startsWith('/api/auth/login')) {
@@ -151,7 +147,7 @@ export async function middleware(request: NextRequest) {
         // Проверяем права для редактирования парковочных мест
         if (path.startsWith('/api/parking-spaces') && request.method === 'PUT') {
             // Только root, admin и cc (LD) могут редактировать
-            if (!['root', 'admin', 'cc'].includes(user.role)) {  // Note: Changed 'ld' to 'cc' per your component code
+            if (!['root', 'admin', 'cc'].includes(user.role)) {
                 console.log('[Middleware] Insufficient permissions for parking spaces edit')
 
                 try {

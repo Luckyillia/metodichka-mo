@@ -391,4 +391,46 @@ export class AuthService {
       throw error
     }
   }
+
+  // Методы для работы с парковочными местами
+  static async getParkingSpaces(): Promise<any[]> {
+    try {
+      const response = await this.fetchWithAuth("/api/parking-spaces")
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch parking spaces")
+      }
+
+      const data = await response.json()
+      return data.spaces || []
+    } catch (error) {
+      console.error("[AuthService] Error fetching parking spaces:", error)
+      return []
+    }
+  }
+
+  static async updateParkingSpace(
+      place: number,
+      person: string,
+      car: string,
+      license: string
+  ): Promise<any> {
+    try {
+      const response = await this.fetchWithAuth("/api/parking-spaces", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ place, person, car, license }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || "Failed to update parking space")
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error("[AuthService] Error updating parking space:", error)
+      throw error
+    }
+  }
 }
