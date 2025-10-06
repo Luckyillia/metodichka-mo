@@ -46,12 +46,12 @@ const ParkingSpaces = () => {
     const licenseRef = useRef<HTMLInputElement>(null);
 
     // Проверка прав на редактирование
-    const canEdit = user && ['root', 'admin', 'ld'].includes(user.role);
+    const canEdit = user && ['root', 'admin', 'ld', 'cc'].includes(user.role);
+    
     // Загрузка данных
     useEffect(() => {
         fetchParkingData();
     }, []);
-
     const fetchParkingData = async () => {
         try {
             setIsLoading(true);

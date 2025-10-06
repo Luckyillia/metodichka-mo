@@ -32,9 +32,11 @@ function verifyAuthToken(token: string): any {
 
 export async function middleware(request: NextRequest) {
     const path = request.nextUrl.pathname
+    console.log('[Middleware] Processing request:', request.method, path)
 
     // Allow public GET for parking spaces
     if (path === '/api/parking-spaces' && request.method === 'GET') {
+        console.log('[Middleware] Allowing public GET for parking spaces')
         return NextResponse.next()
     }
 
@@ -150,8 +152,8 @@ export async function middleware(request: NextRequest) {
 
         // Проверяем права для редактирования парковочных мест
         if (path.startsWith('/api/parking-spaces') && request.method === 'PUT') {
-            // Только root, admin и cc (LD) могут редактировать
-            if (!['root', 'admin', 'cc'].includes(user.role)) {  // Note: Changed 'ld' to 'cc' per your component code
+            // Только root, admin, ld и cc (LD) могут редактировать
+            if (!['root', 'admin', 'ld', 'cc'].includes(user.role)) {
                 console.log('[Middleware] Insufficient permissions for parking spaces edit')
 
                 try {

@@ -22,13 +22,12 @@ function getUserFromHeaders(request: Request) {
 
 // Проверка прав на редактирование (LD = cc, admin, root)
 function canEditParkingSpaces(role: string): boolean {
-    return ["root", "admin", "ld"].includes(role)
+    return ["root", "admin", "ld", "cc"].includes(role)
 }
 
 // GET - Получить все парковочные места
 export async function GET(request: Request) {
     try {
-        console.log("[Parking Spaces API] GET request received")
 
         const { data: spaces, error } = await supabase
             .from("parking_spaces")
@@ -57,7 +56,9 @@ export async function GET(request: Request) {
 // PUT - Обновить парковочное место
 export async function PUT(request: Request) {
     try {
+        console.log("[Parking Spaces API] PUT request received")
         const currentUser = getUserFromHeaders(request)
+        console.log("[Parking Spaces API] Current user:", currentUser)
 
         if (!currentUser) {
             return NextResponse.json({ error: "Не авторизован" }, { status: 401 })
