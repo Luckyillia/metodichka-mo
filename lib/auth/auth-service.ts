@@ -407,16 +407,20 @@ export class AuthService {
 
   static async getParkingSpaces(): Promise<any[]> {
     try {
-      console.log('[AuthService] Fetching parking spaces...')
-      const response = await this.fetchWithAuth("/api/parking-spaces")
-
-      const data = await response.json()
-      console.log('[AuthService] Parking spaces response:', data)
+      // GET запрос не требует авторизации (публичный доступ)
+      const response = await fetch("/api/parking-spaces", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to fetch parking spaces")
+        console.error("[AuthService] Failed to fetch parking spaces, status:", response.status)
+        return []
       }
 
+      const data = await response.json()
       return data.spaces || []
     } catch (error) {
       console.error("[AuthService] Error fetching parking spaces:", error)
@@ -431,22 +435,49 @@ export class AuthService {
       license: string
   ): Promise<any> {
     try {
-      console.log('[AuthService] Updating parking space:', { place, person, car, license })
+      const token = this.getAuthToken()
+      if (!token) {
+        throw new Error("Не авторизован")
+      }
 
-      const response = await this.fetchWithAuth("/api/parking-spaces", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ place, person, car, license }),
+      const response = await fetch("/api/parking-spaces", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          place,
+          person,
+          car,
+          license,
+        }),
       })
 
-      console.log('[AuthService] Response status:', response.status, response.statusText)
+      // Сначала читаем текст ответа
+      const text = await response.text()
 
-      // Читаем response только ОДИН раз
-      const data = await response.json()
-      console.log('[AuthService] Response data:', data)
+      // Проверяем, не пустой ли ответ
+      if (!text) {
+        if (response.ok) {
+          // Успешный ответ без тела
+          return { success: true }
+        }
+        throw new Error("Пустой ответ от сервера")
+      }
 
+      // Пытаемся распарсить JSON
+      let data
+      try {
+        data = JSON.parse(text)
+      } catch (parseError) {
+        console.error("[AuthService] Failed to parse response:", text)
+        throw new Error("Некорректный ответ от сервера")
+      }
+
+      // Проверяем статус после парсинга
       if (!response.ok) {
-        throw new Error(data.error || "Failed to update parking space")
+        throw new Error(data.error || `Ошибка ${response.status}`)
       }
 
       return data

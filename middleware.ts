@@ -151,7 +151,7 @@ export async function middleware(request: NextRequest) {
         }
 
         // Проверяем права для редактирования парковочных мест
-        if (path === '/api/parking-spaces' && request.method === 'PUT') {
+        if (path === '/api/parking-spaces' && ['PUT', 'PATCH', 'POST'].includes(request.method)) {
             console.log('[Middleware] Checking parking edit permissions for user:', user.game_nick, 'role:', user.role)
 
             // Только root, admin, ld и cc могут редактировать
