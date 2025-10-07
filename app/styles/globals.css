@@ -147,11 +147,11 @@ ol {
   list-style: inside;
 }
 
-/* Manual Section Styles - Unified Design System */
+/* Manual Section Styles - Military Theme Design System */
 .subsection {
-  background: rgba(51, 65, 85, 0.5);
+  background: rgba(26, 77, 46, 0.2);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(148, 163, 184, 0.3);
+  border: 1px solid rgba(45, 106, 79, 0.5);
   border-radius: 12px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
@@ -159,23 +159,23 @@ ol {
 }
 
 .subsection:hover {
-  background: rgba(51, 65, 85, 0.6);
-  border-color: rgba(148, 163, 184, 0.4);
+  background: rgba(45, 106, 79, 0.3);
+  border-color: rgba(74, 222, 128, 0.4);
   transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 16px rgba(13, 40, 24, 0.5);
 }
 
 .subsection h3 {
-  color: #93c5fd;
+  color: #4ade80;
   font-size: 1.25rem;
   font-weight: 600;
   margin-bottom: 1rem;
   padding-bottom: 0.75rem;
-  border-bottom: 2px solid rgba(147, 197, 253, 0.3);
+  border-bottom: 2px solid rgba(74, 222, 128, 0.3);
 }
 
 .subsection h4 {
-  color: #bfdbfe;
+  color: #84a98c;
   font-size: 1.1rem;
   font-weight: 600;
   margin-top: 1rem;
@@ -183,14 +183,14 @@ ol {
 }
 
 .subsection p {
-  color: #cbd5e1;
+  color: #c8e6c9;
   line-height: 1.6;
   margin-bottom: 0.75rem;
 }
 
 .subsection ul,
 .subsection ol {
-  color: #cbd5e1;
+  color: #c8e6c9;
   margin-left: 1.25rem;
   margin-bottom: 0.75rem;
 }
@@ -200,20 +200,20 @@ ol {
   line-height: 1.6;
 }
 
-/* Note boxes with circle icon */
+/* Note boxes with circle icon - Military Theme */
 .note {
-  background: rgba(59, 130, 246, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  border-left: 4px solid #3b82f6;
+  background: rgba(74, 222, 128, 0.1);
+  border: 1px solid rgba(74, 222, 128, 0.3);
+  border-left: 4px solid #4ade80;
   border-radius: 8px;
   padding: 1rem;
   margin: 1rem 0;
   position: relative;
-  color: #bfdbfe;
+  color: #c8e6c9;
 }
 
 .note strong {
-  color: #93c5fd;
+  color: #4ade80;
   font-weight: 600;
 }
 
@@ -231,11 +231,11 @@ ol {
   margin-bottom: 0.5rem;
 }
 
-/* Warning boxes with circle icon */
+/* Warning boxes with circle icon - Military Theme */
 .warning {
-  background: rgba(251, 191, 36, 0.1);
-  border: 1px solid rgba(251, 191, 36, 0.3);
-  border-left: 4px solid #fbbf24;
+  background: rgba(212, 175, 55, 0.1);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-left: 4px solid #d4af37;
   border-radius: 8px;
   padding: 1rem;
   margin: 1rem 0;
@@ -244,7 +244,7 @@ ol {
 }
 
 .warning strong {
-  color: #fde68a;
+  color: #d4af37;
   font-weight: 600;
 }
 
@@ -262,18 +262,18 @@ ol {
   margin-bottom: 0.5rem;
 }
 
-/* Document links */
+/* Document links - Military Theme */
 .document-link {
-  color: #60a5fa;
+  color: #4ade80;
   text-decoration: underline;
   transition: color 0.2s ease;
 }
 
 .document-link:hover {
-  color: #93c5fd;
+  color: #84a98c;
 }
 
-/* Schedule grid for interview section */
+/* Schedule grid for interview section - Military Theme */
 .schedule-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -282,21 +282,21 @@ ol {
 }
 
 .schedule-item {
-  background: rgba(59, 130, 246, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  background: rgba(26, 77, 46, 0.2);
+  border: 1px solid rgba(74, 222, 128, 0.3);
   border-radius: 8px;
   padding: 1rem;
   text-align: center;
-  color: #bfdbfe;
+  color: #c8e6c9;
   font-weight: 500;
   transition: all 0.3s ease;
 }
 
 .schedule-item:hover {
-  background: rgba(59, 130, 246, 0.2);
-  border-color: rgba(59, 130, 246, 0.5);
+  background: rgba(45, 106, 79, 0.3);
+  border-color: rgba(74, 222, 128, 0.5);
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 8px rgba(13, 40, 24, 0.5);
 }
 
 /* Responsive adjustments */

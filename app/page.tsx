@@ -87,7 +87,7 @@ export default function ManualPage() {
           <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
             <Sidebar navItems={navItems} activeSection={activeSection} setActiveSection={setActiveSection} />
 
-            <main className="bg-slate-800/90 backdrop-blur-sm rounded-lg border border-slate-700 p-8 shadow-xl">
+            <main className="bg-[#1a4d2e]/20 backdrop-blur-sm rounded-lg border border-[#2d6a4f]/50 p-8 shadow-2xl text-white">
               {!canAccessSection(activeSection) ? (
                   <div className="flex flex-col items-center justify-center py-20 text-center">
                     <AlertCircle className="w-16 h-16 text-red-400 mb-4" />
@@ -102,7 +102,7 @@ export default function ManualPage() {
                   </div>
               ) : SectionComponent ? (
                   <>
-                    <h1 className="text-3xl font-bold text-blue-400 border-b-2 border-blue-500 pb-4 mb-6">
+                    <h1 className="text-3xl font-bold text-[#4ade80] border-b-2 border-[#4ade80]/50 pb-4 mb-6">
                       {getSectionTitle(activeSection)}
                     </h1>
                     <Suspense

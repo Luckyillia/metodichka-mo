@@ -13,7 +13,7 @@ export default function Sidebar({ navItems, activeSection, setActiveSection }: S
   const { canAccessSection } = useAuth()
 
   return (
-    <nav className="bg-gray-900/30 backdrop-blur-md rounded-lg border border-gray-700/50 p-4 sticky top-24 shadow-xl max-h-[calc(100vh-7rem)] overflow-y-auto">
+    <nav className="bg-[#1a4d2e]/30 backdrop-blur-md rounded-lg border border-[#2d6a4f]/50 p-4 sticky top-24 shadow-xl max-h-[calc(100vh-7rem)] overflow-y-auto">
       <ul className="space-y-1 list-none">
         {navItems.map((item) => {
           const hasAccess = canAccessSection(item.id)
@@ -30,8 +30,8 @@ export default function Sidebar({ navItems, activeSection, setActiveSection }: S
                   w-full text-left px-4 py-3 rounded-md transition-all duration-200 flex items-center gap-3
                   ${
                     activeSection === item.id
-                      ? "bg-gray-700/80 text-white shadow-md font-medium"
-                      : "text-gray-300 hover:bg-gray-800/50 hover:text-white"
+                      ? "bg-[#1a4d2e]/90 shadow-lg shadow-[#4ade80]/20 text-white font-semibold border-l-4 border-[#4ade80] scale-105"
+                      : "text-white hover:bg-[#2d6a4f]/50 hover:text-[#4ade80] hover:scale-102 hover:shadow-md hover:border-l-4 hover:border-[#4ade80]/50"
                   }
                 `}
               >
