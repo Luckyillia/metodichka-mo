@@ -145,6 +145,7 @@ const TrainingSection = () => {
                             title={training}
                             icon={trainingIcon[training as keyof typeof trainingContent] || "📖"}
                             items={trainingContent[training as keyof typeof trainingContent] || ["Содержание лекции будет добавлено позже"]}
+                            who="ss"
                         />
                     ))}
                 </div>

@@ -923,7 +923,7 @@ const ReportGenerator = () => {
                 <h3>Сгенерированный отчет</h3>
                 <ExamplePhrase
                     text={generateReport()}
-                    type="ms"
+                    type="ss"
                     messageType="multiline"
                 />
             </div>

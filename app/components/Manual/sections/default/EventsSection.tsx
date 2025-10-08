@@ -82,6 +82,7 @@ const EventsSection = () => {
                             title={training}
                             icon={eventsIcon[training as keyof typeof eventsContent] || "📖"}
                             items={eventsContent[training as keyof typeof eventsContent] || ["Содержание будет добавлено позже"]}
+                            who="ss"
                         />
                     ))}
                 </div>
